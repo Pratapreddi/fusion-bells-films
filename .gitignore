@@ -15,4 +15,10 @@ desktop.ini
 .idea/
 *.log
 
+# Video files — too large for Cloudflare Workers (25 MB limit)
+# Served via Google Drive / YouTube instead
+video/*.mp4
+video/*.webm
+video/*.mov
+
 
