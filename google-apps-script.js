@@ -22,7 +22,10 @@
  *       Wedding Photos/      -> category "Wedding Photos"
  *     Founder/               -> founder portrait (NOT shown in the gallery)
  *     Logo/                  -> ignored
- *     Video/                 -> ignored
+ *     Video/                 -> wedding films, returned in `videos` (NOT in the
+ *                               photo gallery). Name files
+ *                               "Gowthami & Samarth - Pre-wedding film.mp4"
+ *                               and the site splits that into title + caption.
  *
  * Nested folders deeper than that (e.g. Photos/Engagement/Selects) are
  * rolled up into their nearest named category.
@@ -48,7 +51,10 @@
 const ROOT_FOLDER_ID = "1i_WpYgn7Jn4km10IWl5Mb2DlfVM2lPxB";
 
 // Folder names that are never gallery categories.
-const IGNORED_FOLDERS  = ["logo", "logos", "branding", "video", "videos", "raw", "private"];
+const IGNORED_FOLDERS  = ["logo", "logos", "branding", "raw", "private"];
+// Films live here. They are returned in their own `videos` array — never mixed
+// into the photo gallery.
+const VIDEO_FOLDERS    = ["video", "videos", "films", "film"];
 // Folder holding the founder portrait.
 const FOUNDER_FOLDERS  = ["founder", "founders", "about", "team"];
 // Pass-through containers: their SUBFOLDERS become the categories.
@@ -56,6 +62,7 @@ const CONTAINER_FOLDERS = ["photos", "photo", "gallery", "galleries", "portfolio
 
 // Keep the payload small enough to stay fast on mobile.
 const MAX_PER_CATEGORY = 30;
+const MAX_VIDEOS       = 24;
 const MAX_TOTAL        = 240;
 const CACHE_SECONDS    = 3 * 60 * 60;
 
@@ -75,6 +82,7 @@ function doGet(e) {
 
     const buckets = {};   // slug -> { name, files: [] }
     const order   = [];   // preserves discovery order
+    const videos  = [];
     let founder   = null;
 
     function slugify(text) {
@@ -120,6 +128,11 @@ function doGet(e) {
 
         if (IGNORED_FOLDERS.indexOf(key) !== -1) continue;
 
+        if (VIDEO_FOLDERS.indexOf(key) !== -1) {
+          collectVideos(sub, 0);
+          continue;
+        }
+
         if (FOUNDER_FOLDERS.indexOf(key) !== -1) {
           if (!founder) founder = firstImage(sub);
           continue;
@@ -148,7 +161,49 @@ function doGet(e) {
       return "https://lh3.googleusercontent.com/d/" + id + "=w" + width;
     }
     function cleanTitle(name) {
-      return name.replace(/(\.[A-Za-z0-9]{2,5})+$/, "").replace(/[-_]+/g, " ").trim();
+      return name.replace(/(\.[A-Za-z]{2,5})+$/, "").replace(/[-_]+/g, " ").trim();
+    }
+
+    /**
+     * Turns a working filename into something presentable.
+     * "04 Gowthami & Samarth__Prewed Song CC 25.04.2024.mp4"
+     *   -> { title: "Gowthami & Samarth", label: "Prewed Song CC" }
+     * Also handles "Couple Name - Teaser.mp4" and "Couple | Wedding film.mp4".
+     */
+    function parseFilmName(name) {
+      let bare = name.replace(/\.(mp4|mov|m4v|webm|avi|mkv|mpg|mpeg)$/i, "");   // video extension
+      bare = bare.replace(/^\d{1,3}[\s._-]+/, "");             // leading "04 " index
+      const parts = bare.split(/__+|\s+[-–—]\s+|\s*\|\s*/);
+
+      const title = (parts[0] || bare).replace(/[_]+/g, " ").replace(/\s+/g, " ").trim();
+      let label = parts.slice(1).join(" ")
+        .replace(/\b\d{1,2}[.\-/]\d{1,2}[.\-/]\d{2,4}\b/g, "")  // trailing dates
+        .replace(/[_]+/g, " ").replace(/\s+/g, " ").trim();
+
+      return { title: title || "Wedding film", label: label || "Wedding film" };
+    }
+
+    function collectVideos(folder, depth) {
+      if (depth > 3 || videos.length >= MAX_VIDEOS) return;
+
+      const files = folder.getFiles();
+      while (files.hasNext() && videos.length < MAX_VIDEOS) {
+        const f = files.next();
+        if (f.getMimeType().indexOf("video/") !== 0) continue;
+        const id = f.getId();
+        const named = parseFilmName(f.getName());
+        videos.push({
+          id: id,
+          type: "drive",
+          title: named.title,
+          label: named.label,
+          poster: driveUrl(id, 1280),
+          src: "https://drive.google.com/file/d/" + id + "/preview"
+        });
+      }
+
+      const subs = folder.getFolders();
+      while (subs.hasNext() && videos.length < MAX_VIDEOS) collectVideos(subs.next(), depth + 1);
     }
 
     function firstImage(folder) {
@@ -218,6 +273,7 @@ function doGet(e) {
       folderId: ROOT_FOLDER_ID,
       generated: new Date().toISOString(),
       founder: founder,
+      videos: videos,
       categories: categories,
       totalPhotos: photos.length,
       photos: photos

@@ -23,7 +23,7 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Karla:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,600;6..96,700&family=Caveat+Brush&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Karla:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Kaushan+Script&family=Permanent+Marker&family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Plus+Jakarta+Sans:wght@500;600;700&family=Sedgwick+Ave+Display&display=swap" rel="stylesheet">
 <link rel="icon" type="image/png" href="images/logo-mark.png">
 <link rel="stylesheet" href="styles.css">
 
@@ -64,6 +64,7 @@
       <span class="nt-bars"><i></i><i></i></span>
     </button>
   </div>
+  <div class="scroll-progress" aria-hidden="true"><i id="scrollProgress"></i></div>
 </header>
 
 <!-- ============ FULLSCREEN MENU ============ -->
@@ -167,9 +168,9 @@
 </section>
 
 <!-- ============ CTA ============ -->
-<section class="cta-band" data-parallax>
-  <div class="cta-bg" style="background-image:url('images/embrace-sky.webp')"></div>
-  <div class="cta-inner">
+<section class="cta-band" data-fx="drift" data-fx-scale="1.30">
+  <div class="cta-bg" data-fx-target style="background-image:url('images/embrace-sky.webp')"></div>
+  <div class="cta-inner" data-fx-counter>
     <h2 class="cta-line">
       <span class="cta-text">Capturing love, beyond all boundaries.</span>
       <svg class="cta-ring" viewBox="0 0 640 90" preserveAspectRatio="none" aria-hidden="true">

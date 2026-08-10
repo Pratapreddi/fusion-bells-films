@@ -108,6 +108,7 @@
 
   function onScroll() {
     const y = window.scrollY;
+    const vh = window.innerHeight;
     if (siteNav) {
       siteNav.classList.toggle('scrolled', y > 60);
       const goingDown = y > lastY && y > 400;
@@ -120,12 +121,12 @@
     if (sections.length) {
       let current = null;
       sections.forEach(sec => {
-        if (sec.getBoundingClientRect().top <= window.innerHeight * 0.4) current = sec.id;
+        if (sec.getBoundingClientRect().top <= vh * 0.4) current = sec.id;
       });
       navAnchors.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + current));
     }
 
-    parallax();
+    ScrollFX.frame(y, vh);
   }
 
   let ticking = false;
@@ -138,22 +139,159 @@
   if (toTop) toTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 
   /* ---------------------------------------------------------
-     PARALLAX BANDS
+     SCROLLFX — one scroll-driven motion engine
+     ---------------------------------------------------------
+     Everything that moves with the scrollbar goes through here, so the page
+     reads scroll position once per frame and only ever writes transforms.
+     Element geometry is measured up front and re-measured on resize; nothing
+     inside the frame loop touches layout, which is what keeps it smooth.
+
+     Opt in from the markup:
+       data-fx="drift"   data-fx-speed="0.4"   (vertical depth)
+       data-fx="track"                          (horizontal strip)
+       data-fx="hero"                           (layered hero)
      --------------------------------------------------------- */
-  const parallaxEls = $$('[data-parallax]');
-  function parallax() {
-    if (reduceMotion) return;
-    const vh = window.innerHeight;
-    parallaxEls.forEach(section => {
-      const bg = section.querySelector('.cine-bg, .cta-bg');
-      if (!bg) return;
-      const rect = section.getBoundingClientRect();
-      if (rect.bottom < -200 || rect.top > vh + 200) return;
-      const progress = (rect.top + rect.height / 2 - vh / 2) / vh; // -1 .. 1
-      bg.style.transform = 'translate3d(0,' + (progress * -60).toFixed(2) + 'px,0)';
-    });
-  }
-  parallax();
+  const saveData = !!(navigator.connection && navigator.connection.saveData);
+  const bigScreen = window.matchMedia('(min-width: 900px)');
+
+  const ScrollFX = (function () {
+    let items = [];
+    let progressBar = null;
+    let enabled = !reduceMotion && !saveData;
+
+    function measure() {
+      const vh = window.innerHeight;
+      const wide = bigScreen.matches;
+
+      items.forEach(item => {
+        // A track needs its own height set before anything is measured: give it
+        // viewport + strip overflow so one screen of scrolling pans one screen
+        // sideways. Clearing it lets the mobile fallback lay out normally.
+        if (item.kind === 'track' && item.inner) {
+          item.el.style.height = '';
+          if (wide && enabled) {
+            const viewport = item.inner.parentElement;
+            const overflow = Math.max(0, item.inner.scrollWidth - viewport.clientWidth);
+            if (overflow > 0) item.el.style.height = (vh + overflow) + 'px';
+            item.overflow = overflow;
+          } else {
+            item.overflow = 0;
+            item.inner.style.transform = '';
+          }
+        }
+        const r = item.el.getBoundingClientRect();
+        item.top = r.top + window.scrollY;
+        item.height = r.height;
+        // Travel must be budgeted against the element that actually moves. On a
+        // pinned section the driver is tall and the media is one screen high;
+        // using the driver's height would slide the media clean past its edge.
+        item.targetHeight = item.target ? item.target.getBoundingClientRect().height : r.height;
+      });
+    }
+
+    function register(el) {
+      const kind = el.dataset.fx;
+      const item = {
+        el: el,
+        kind: kind,
+        speed: parseFloat(el.dataset.fxSpeed || '0.35'),
+        // drifting media is scaled up slightly so it has room to move
+        // inside its frame without exposing an edge
+        scale: parseFloat(el.dataset.fxScale || '1.2'),
+        target: el.querySelector('[data-fx-target]') || el,
+        counter: el.querySelector('[data-fx-counter]'),
+        inner: el.querySelector('[data-fx-inner]'),
+        layers: kind === 'hero' ? {
+          bgs: Array.prototype.slice.call(el.querySelectorAll('[data-fx-bg]')),
+          copy: el.querySelector('[data-fx-copy]'),
+          chrome: Array.prototype.slice.call(el.querySelectorAll('[data-fx-chrome]'))
+        } : null,
+        top: 0, height: 0, overflow: 0
+      };
+      items.push(item);
+    }
+
+    // How far the element has travelled through the viewport: 0 entering, 1 leaving.
+    function progressOf(item, scrollY, vh) {
+      return (scrollY + vh - item.top) / (vh + item.height);
+    }
+
+    function frame(scrollY, vh) {
+      if (progressBar) {
+        const max = document.documentElement.scrollHeight - vh;
+        progressBar.style.transform = 'scaleX(' + (max > 0 ? Math.min(scrollY / max, 1) : 0) + ')';
+      }
+      if (!enabled) return;
+
+      const wide = bigScreen.matches;
+
+      items.forEach(item => {
+        // Skip anything comfortably off-screen.
+        if (item.top + item.height < scrollY - vh || item.top > scrollY + vh * 2) return;
+        const p = progressOf(item, scrollY, vh);
+
+        if (item.kind === 'drift') {
+          // Travel comes from the headroom the zoom creates: a 1.3 scale on a
+          // 700px band hides 105px above and below, so the media can move that
+          // far and no further. Bigger scale = deeper parallax, never a gap.
+          const range = (item.scale - 1) * item.targetHeight * 0.5;
+          const clamped = Math.min(Math.max(p, 0), 1);
+          const shift = (clamped - 0.5) * 2 * range;
+          item.target.style.transform =
+            'translate3d(0,' + shift.toFixed(2) + 'px,0) scale(' + item.scale + ')';
+          // Copy riding on top drifts the other way, which is what actually
+          // sells the depth — two planes separating, not one thing sliding.
+          if (item.counter) {
+            item.counter.style.transform = 'translate3d(0,' + (-shift * 0.42).toFixed(2) + 'px,0)';
+          }
+
+        } else if (item.kind === 'hero') {
+          const y = scrollY;
+          if (y > vh * 1.4) return;
+          const t = y / vh;
+          item.layers.bgs.forEach(bg => {
+            bg.style.transform = 'translate3d(0,' + (y * 0.5).toFixed(2) + 'px,0) scale(' +
+              (1 + t * 0.12).toFixed(4) + ')';
+          });
+          if (item.layers.copy) {
+            item.layers.copy.style.transform = 'translate3d(0,' + (y * 0.28).toFixed(2) + 'px,0)';
+            item.layers.copy.style.opacity = String(Math.max(0, 1 - y / (vh * 0.62)));
+          }
+          if (item.layers.chrome) {
+            item.layers.chrome.forEach(c => {
+              c.style.opacity = String(Math.max(0, 1 - y / (vh * 0.35)));
+            });
+          }
+
+        } else if (item.kind === 'track' && item.inner) {
+          // Horizontal strip: only on wide screens, and only while pinned.
+          if (!wide || !item.overflow) { item.inner.style.transform = ''; return; }
+          const travel = item.height - vh;
+          if (travel <= 0) return;
+          const t = Math.min(Math.max((scrollY - item.top) / travel, 0), 1);
+          item.inner.style.transform = 'translate3d(' + (-t * item.overflow).toFixed(2) + 'px,0,0)';
+        }
+      });
+    }
+
+    function init() {
+      progressBar = $('#scrollProgress');
+      $$('[data-fx]').forEach(register);
+      measure();
+
+      if (typeof ResizeObserver !== 'undefined') {
+        const ro = new ResizeObserver(() => measure());
+        items.forEach(i => ro.observe(i.el));
+      }
+      window.addEventListener('resize', measure);
+      window.addEventListener('load', measure);
+      bigScreen.addEventListener('change', () => { measure(); });
+
+      frame(window.scrollY, window.innerHeight);
+    }
+
+    return { init: init, frame: frame, measure: measure, isEnabled: () => enabled };
+  })();
 
   /* ---------------------------------------------------------
      FULLSCREEN MENU
@@ -248,6 +386,279 @@
   if (featPrev) featPrev.addEventListener('click', () => { goToFeat(featIdx - 1); restartFeat(); });
   if (featNext) featNext.addEventListener('click', () => { goToFeat(featIdx + 1); restartFeat(); });
   if (featSlides.length > 1) { goToFeat(0); restartFeat(); }
+
+  // Works out once which of the candidate files actually exists, and shares that
+  // answer with every background video, so the check costs one request total.
+  const resolveSource = (function () {
+    const cache = {};
+    return function (list) {
+      const key = list.join('|');
+      if (cache[key]) return cache[key];
+      cache[key] = (async () => {
+        for (const candidate of list) {
+          try {
+            const probe = await fetch(candidate, { method: 'HEAD' });
+            if (probe.ok) return candidate;
+          } catch (err) { /* try the next one */ }
+        }
+        return null;
+      })();
+      return cache[key];
+    };
+  })();
+
+  /* ---------------------------------------------------------
+     FILMS
+     ---------------------------------------------------------
+     Each film declares where it lives, so they can be mixed freely:
+       { type:'file',    src:'video/name.mp4' }
+       { type:'youtube', id:'dQw4w9WgXcQ' }        <- fastest, recommended
+       { type:'drive',   id:'<drive file id>' }    <- auto-filled from Drive
+     Anything in the Drive "Video" folder is appended automatically once the
+     Apps Script is redeployed.
+     --------------------------------------------------------- */
+  const FILMS = [
+    {
+      key: 'showcase',
+      title: 'Gowthami & Samarth',
+      label: 'Pre-wedding film',
+      type: 'file',
+      sources: ['video/hero-loop.mp4', 'video/hero-loop.webm'],
+      poster: 'images/embrace-sky.webp'
+    },
+    {
+      key: 'dubai',
+      title: 'Dubai Pre-wedding',
+      label: 'Pre-wedding film',
+      type: 'file',
+      sources: ['video/dubai.mp4', 'video/dubai.webm'],
+      poster: 'images/light-dancers.webp'
+    }
+  ];
+
+  // Which Drive film a named button should open, when no local file is set.
+  // Patterns are tried in order, so the exact film wins over a loose match.
+  const KEY_MATCHERS = {
+    showcase: [/gowthami[\s\S]*prewed song/i, /prewed song/i, /gowthami|samarth/i],
+    dubai: [/dubai/i, /desert/i]
+  };
+
+  function filmIndexForKey(key) {
+    // a curated entry wins, but only if its file actually exists
+    let i = FILMS.findIndex(f => f.key === key && f.ready);
+    if (i > -1) return i;
+    const patterns = KEY_MATCHERS[key] || [];
+    for (const re of patterns) {
+      i = FILMS.findIndex(f => f.ready && re.test((f.title || '') + ' ' + (f.label || '')));
+      if (i > -1) return i;
+    }
+    return -1;
+  }
+
+  function filmIndexFor(trigger) {
+    if (trigger.dataset.filmIndex) return parseInt(trigger.dataset.filmIndex, 10);
+    if (trigger.dataset.filmKey) return filmIndexForKey(trigger.dataset.filmKey);
+    return parseInt(trigger.dataset.film, 10) || 0;
+  }
+
+  /* Drive filenames are working titles — tidy them for display. Doing this
+     here rather than in the Apps Script means renaming rules never need
+     another deployment. */
+  function prettyName(text, fallback) {
+    let s = String(text || '').replace(/[._]+/g, ' ');
+    s = s.replace(/\b(fbf|fusion bells films|fusion|final|export|copy|cc)\b/gi, ' ');
+    s = s.replace(/([A-Za-z])(\d)/g, '$1 $2');        // Reception01 -> Reception 01
+    s = s.replace(/\s+/g, ' ').trim();
+    if (/^\d+$/.test(s) || !s) return fallback;        // "02" is not a title
+    if (s === s.toUpperCase()) {                       // SHOUTY NAMES -> Title Case
+      s = s.toLowerCase().replace(/\b[a-z]/g, c => c.toUpperCase())
+           .replace(/\b(And|Of|The)\b/g, m => m.toLowerCase());
+    }
+    return s;
+  }
+
+  function filmPoster(film) {
+    if (film.poster) return film.poster;
+    if (film.type === 'youtube') return 'https://i.ytimg.com/vi/' + film.id + '/maxresdefault.jpg';
+    if (film.type === 'drive') return 'https://drive.google.com/thumbnail?id=' + film.id + '&sz=w1280';
+    return 'images/embrace-sky.webp';
+  }
+
+  const filmsBlock = $('#filmsBlock');
+  const filmsGrid = $('#filmsGrid');
+
+  // A film is only offered once we know it can actually play. Self-hosted
+  // files are checked; Drive and YouTube entries carry their own id, so they
+  // are taken at face value. This is what stops a play button from opening
+  // an empty player.
+  async function confirmFilms() {
+    await Promise.all(FILMS.map(async (f) => {
+      if (f.type === 'file') {
+        // whichever of the candidate files exists becomes the one we play
+        const found = await resolveSource(f.sources || [f.src]);
+        if (found) f.src = found;
+        f.ready = !!found;
+      } else {
+        f.ready = !!f.id;
+      }
+    }));
+    renderFilms();
+    // Point every named "play" button at a real film, or hide it outright.
+    $$('[data-film-key]').forEach(btn => {
+      const idx = filmIndexForKey(btn.dataset.filmKey);
+      if (idx > -1) { btn.dataset.filmIndex = String(idx); btn.hidden = false; }
+      else { delete btn.dataset.filmIndex; btn.hidden = true; }
+    });
+  }
+
+  function renderFilms() {
+    if (!filmsGrid) return;
+    const ready = FILMS.filter(f => f.ready);
+    if (!ready.length) { if (filmsBlock) filmsBlock.hidden = true; return; }
+    if (filmsBlock) filmsBlock.hidden = false;
+
+    filmsGrid.innerHTML = FILMS.map((f, i) => f.ready ? `
+      <button class="film-card" type="button" data-film="${i}" aria-label="Play ${esc(f.title)}">
+        <span class="film-poster">
+          <img src="${esc(filmPoster(f))}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">
+          <span class="film-play"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></span>
+        </span>
+        <span class="film-meta"><b>${esc(f.title)}</b><i>${esc(f.label || 'Wedding film')}</i></span>
+      </button>` : '').join('');
+
+    $$('.film-card', filmsGrid).forEach(card => observe(card));
+  }
+
+  /* ---------- video modal ---------- */
+  const videoModal = $('#videoModal');
+  const vmStage = $('#vmStage');
+  const vmTitle = $('#vmTitle');
+  const vmBlur = $('#vmBlur');
+
+  function openFilm(index) {
+    const film = FILMS[index];
+    if (!film || !videoModal) return;
+
+    if (vmBlur) vmBlur.style.backgroundImage = 'url("' + filmPoster(film) + '")';
+    if (vmTitle) vmTitle.textContent = film.title + (film.label ? ' — ' + film.label : '');
+
+    vmStage.innerHTML = '';
+    if (film.type === 'youtube') {
+      const f = document.createElement('iframe');
+      f.src = 'https://www.youtube-nocookie.com/embed/' + film.id +
+              '?autoplay=1&rel=0&modestbranding=1&playsinline=1';
+      f.allow = 'accelerometer; autoplay; encrypted-media; picture-in-picture';
+      f.allowFullscreen = true;
+      f.title = film.title;
+      vmStage.appendChild(f);
+    } else if (film.type === 'drive') {
+      const f = document.createElement('iframe');
+      f.src = 'https://drive.google.com/file/d/' + film.id + '/preview';
+      f.allow = 'autoplay';
+      f.allowFullscreen = true;
+      f.title = film.title;
+      vmStage.appendChild(f);
+    } else {
+      const v = document.createElement('video');
+      v.src = film.src;
+      v.controls = true; v.autoplay = true; v.playsInline = true;
+      v.poster = filmPoster(film);
+      // A missing file should read as "not uploaded yet", not a black hole.
+      v.addEventListener('error', () => {
+        vmStage.innerHTML = '<div class="vm-note">This film is still being uploaded &mdash;' +
+          ' please check back shortly, or ask us for a private link.</div>';
+      });
+      vmStage.appendChild(v);
+    }
+
+    videoModal.classList.add('open');
+    document.body.classList.add('locked');
+  }
+
+  function closeFilm() {
+    if (!videoModal) return;
+    videoModal.classList.remove('open');
+    // Tear the player out entirely — pausing an iframe is not possible, and a
+    // lingering <video> keeps its audio going behind the page.
+    setTimeout(() => { if (vmStage) vmStage.innerHTML = ''; }, 300);
+    if (!document.body.classList.contains('menu-open')) document.body.classList.remove('locked');
+  }
+
+  if (videoModal) {
+    $('#vmClose').addEventListener('click', closeFilm);
+    videoModal.addEventListener('click', (e) => { if (e.target === videoModal) closeFilm(); });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && videoModal.classList.contains('open')) closeFilm();
+    });
+    document.addEventListener('click', (e) => {
+      const trigger = e.target.closest('[data-film], [data-film-key]');
+      if (trigger) openFilm(filmIndexFor(trigger));
+    });
+  }
+
+  confirmFilms();
+
+  /* ---------------------------------------------------------
+     HERO + SHOWREEL BACKGROUND VIDEO
+     --------------------------------------------------------- */
+  // Background clips are muted, looping and only fetched once scrolled into
+  // view, so they run on phones too — we only skip them when the visitor has
+  // asked for less motion, less data, or is on a genuinely slow connection.
+  function canPlayBackgroundVideo() {
+    const conn = navigator.connection;
+    const slow = conn && /(^|-)2g$/.test(String(conn.effectiveType || ''));
+    return !reduceMotion && !saveData && !slow;
+  }
+
+  // Accepts one src or a list tried in order (mp4 first, webm as a smaller
+  // alternative). Returns quietly if none of them exist, leaving the poster
+  // imagery in place.
+  async function mountBackgroundVideo(video, sources, onPlaying) {
+    if (!video || !canPlayBackgroundVideo()) return;
+    const list = [].concat(sources).filter(Boolean);
+    if (!list.length) return;
+
+    const src = await resolveSource(list);
+    if (!src) return;
+
+    video.src = src;
+    video.load();
+    const start = () => video.play().catch(() => { /* browser refused; poster stays */ });
+
+    video.addEventListener('canplay', () => {
+      video.classList.add('is-playing');
+      if (onPlaying) onPlaying();
+    }, { once: true });
+    video.addEventListener('error', () => video.removeAttribute('src'), { once: true });
+
+    // Only run while on screen — background video off-screen is wasted battery.
+    new IntersectionObserver(entries => {
+      entries.forEach(e => e.isIntersecting ? start() : video.pause());
+    }, { threshold: 0.05 }).observe(video);
+  }
+
+  const heroVideo = $('#heroVideo');
+  const heroSound = $('#heroSound');
+  const heroSoundLabel = $('#heroSoundLabel');
+
+  const filmByKey = (k) => FILMS[FILMS.findIndex(f => f.key === k)] || {};
+  const HERO_SOURCES = filmByKey('showcase').sources || [];
+
+  mountBackgroundVideo(heroVideo, HERO_SOURCES, () => {
+    clearInterval(heroTimer);           // the photo carousel steps aside
+    if (heroSound) heroSound.hidden = false;
+  });
+
+  if (heroSound && heroVideo) {
+    heroSound.addEventListener('click', () => {
+      heroVideo.muted = !heroVideo.muted;
+      heroSound.setAttribute('aria-label', heroVideo.muted ? 'Turn sound on' : 'Turn sound off');
+      if (heroSoundLabel) heroSoundLabel.textContent = heroVideo.muted ? 'Sound on' : 'Sound off';
+    });
+  }
+
+  mountBackgroundVideo($('#showreelVideo'), HERO_SOURCES);
+  mountBackgroundVideo($('#featureVideo'), filmByKey('dubai').sources || []);
 
   /* ---------------------------------------------------------
      GALLERY + GOOGLE DRIVE SYNC
@@ -362,6 +773,8 @@
 
     // The founder portrait lives in its own Drive folder and is never a gallery frame.
     applyFounder(data.founder);
+    // Films come back in their own array, never mixed into the photo gallery.
+    mergeDriveFilms(data.videos);
 
     if (!data.photos || !data.photos.length) return;
 
@@ -376,6 +789,22 @@
     renderLimit = PAGE_SIZE;
     fillMoments(photos);
     renderDriveFrames(false);
+  }
+
+  // Films from the Drive "Video" folder, appended after the curated ones.
+  function mergeDriveFilms(list) {
+    if (!list || !list.length) return;
+    const known = FILMS.map(f => f.id || f.src);
+    let added = 0;
+    list.forEach(v => {
+      if (!v || !v.id || known.indexOf(v.id) !== -1) return;
+      FILMS.push(Object.assign({}, v, {
+        title: prettyName(v.title, 'Wedding film'),
+        label: prettyName(v.label, 'Wedding film')
+      }));
+      added++;
+    });
+    if (added) confirmFilms();
   }
 
   // --- founder portrait, pulled from the Drive "Founder" folder ---
@@ -798,8 +1227,9 @@
   let resizeTimer = null;
   window.addEventListener('resize', () => {
     clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(() => { syncT(); parallax(); }, 150);
+    resizeTimer = setTimeout(() => { syncT(); ScrollFX.measure(); }, 150);
   });
 
+  ScrollFX.init();
   onScroll();
 })();

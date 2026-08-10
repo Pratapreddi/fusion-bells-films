@@ -42,7 +42,7 @@
 <!-- Fonts & Preconnect -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Karla:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,600;6..96,700&family=Caveat+Brush&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Karla:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Kaushan+Script&family=Permanent+Marker&family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Plus+Jakarta+Sans:wght@500;600;700&family=Sedgwick+Ave+Display&display=swap" rel="stylesheet">
 <link rel="icon" type="image/png" href="images/logo-mark.png">
 <link rel="stylesheet" href="styles.css">
 
@@ -195,6 +195,7 @@
       <span class="nt-bars"><i></i><i></i></span>
     </button>
   </div>
+  <div class="scroll-progress" aria-hidden="true"><i id="scrollProgress"></i></div>
 </header>
 
 <!-- ============ FULLSCREEN MENU OVERLAY ============ -->
@@ -227,8 +228,8 @@
 </div>
 
 <!-- ============ HERO CAROUSEL ============ -->
-<section class="hero" id="home">
-  <div class="hero-slides" id="heroSlides">
+<section class="hero" id="home" data-fx="hero">
+  <div class="hero-slides" id="heroSlides" data-fx-bg>
     <div class="hero-slide active" style="background-image:url('images/embrace-sky.webp')"></div>
     <div class="hero-slide" style="background-image:url('images/smoke-cannons.webp')"></div>
     <div class="hero-slide" style="background-image:url('images/hero-garland.webp')"></div>
@@ -237,9 +238,19 @@
     <div class="hero-slide" style="background-image:url('images/mandap-laughter.webp')"></div>
   </div>
 
-  <div class="hero-frame-count">FRAME <span id="frameNo">01</span> / 06 — INDIA</div>
+  <!-- Showcase film. src is attached by app.js only on wide screens, with data
+       saving off and motion allowed; the photo carousel above is the fallback. -->
+  <video class="hero-video" id="heroVideo" data-fx-bg muted loop playsinline preload="none"
+         aria-hidden="true"></video>
 
-  <div class="wrap hero-content">
+  <button class="hero-sound" id="heroSound" type="button" hidden aria-label="Turn sound on">
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/></svg>
+    <span id="heroSoundLabel">Sound on</span>
+  </button>
+
+  <div class="hero-frame-count" data-fx-chrome>FRAME <span id="frameNo">01</span> / 06 — INDIA</div>
+
+  <div class="wrap hero-content" data-fx-copy>
     <div class="hero-text">
       <span class="eyebrow light">Candid Wedding Photographers &amp; Filmmakers</span>
       <h1 class="hero-title split">Crafting Timeless<br><span class="italic">Wedding Stories</span></h1>
@@ -252,7 +263,7 @@
   </div>
 
   <div class="hero-dots" id="heroDots"></div>
-  <div class="scroll-cue"><span>Scroll</span><span class="line"></span></div>
+  <div class="scroll-cue" data-fx-chrome><span>Scroll</span><span class="line"></span></div>
 </section>
 
 <!-- ============ MARQUEE ============ -->
@@ -277,23 +288,27 @@
   </div>
 </section>
 
-<!-- ============ FRAMING YOUR FOREVER — feature grid ============ -->
-<section class="forever">
-  <div class="wrap">
-    <div class="section-head center reveal">
-      <span class="eyebrow">Selected Frames</span>
-      <h2 class="split">Framing your Forever</h2>
-      <p>Six moments from six different weddings — no set-ups, no re-takes, nothing asked for twice.</p>
-    </div>
+<!-- ============ FEATURE FILM BAND (Dubai) ============ -->
+<section class="film-feature" data-fx="drift" data-fx-scale="1.20">
+  <div class="ff-media" data-fx-target>
+    <img class="ff-poster" src="images/light-dancers.webp" alt="Pre-wedding shoot in the Dubai desert at golden hour" loading="lazy">
+    <video class="ff-video" id="featureVideo" muted loop playsinline preload="none" aria-hidden="true"></video>
   </div>
+  <span class="ff-veil"></span>
 
-  <div class="forever-grid">
-    <figure class="fv-item tall reveal"><img src="images/hero-garland.webp" loading="lazy" alt="Bride and groom exchanging garlands at an Indian wedding"></figure>
-    <figure class="fv-item reveal reveal-d1"><img src="images/haldi-sunglasses.webp" loading="lazy" alt="Groom in sunglasses during a haldi ceremony"></figure>
-    <figure class="fv-item reveal reveal-d2"><img src="images/rings-foreheads.webp" loading="lazy" alt="Couple touching foreheads, rings visible"></figure>
-    <figure class="fv-item tall reveal reveal-d1"><img src="images/bride-firelight.webp" loading="lazy" alt="Bridal portrait lit by firelight"></figure>
-    <figure class="fv-item reveal reveal-d2"><img src="images/mandap-laughter.webp" loading="lazy" alt="Laughter under the mandap during the ceremony"></figure>
-    <figure class="fv-item reveal reveal-d3"><img src="images/light-dancers.webp" loading="lazy" alt="Performers with lights at a wedding reception"></figure>
+  <div class="wrap ff-copy" data-fx-counter>
+    <span class="eyebrow light">Dubai &middot; Pre-wedding</span>
+    <h2 class="split">A desert, two people,<br>and the last of the light.</h2>
+    <p>Shot across the dunes outside Dubai as the sun went down &mdash; no crew calls, no marks to hit, just the two of them and a horizon.</p>
+    <button class="btn btn-slab" type="button" data-film-key="dubai" hidden>Play with sound</button>
+  </div>
+</section>
+
+<!-- ============ VALUE / QUOTE PROPOSITION ============ -->
+<section class="value">
+  <div class="wrap">
+    <h2 class="value-line split reveal">Your wedding day is a celebration of love,<br><span class="italic">joy, and unforgettable memories.</span></h2>
+    <p class="value-sub reveal reveal-d2">We photograph it and we film it &mdash; two crafts, one crew, one shared obsession<br class="hide-mob">with the moments nobody thought to pose for.</p>
   </div>
 </section>
 
@@ -331,11 +346,27 @@
   </div>
 </section>
 
-<!-- ============ VALUE PROPOSITION ============ -->
+<!-- ============ VALUE / STORYTELLING QUOTE SECTION ============ -->
 <section class="value">
   <div class="wrap">
-    <h2 class="value-line split reveal">Your wedding day is a celebration of love, joy, and unforgettable memories.</h2>
-    <p class="value-sub reveal reveal-d2">We photograph it and we film it — two crafts, one crew, one shared obsession with the moments nobody thought to pose for.</p>
+    <h2 class="value-line split reveal">The most beautiful moments are the ones<br><span class="italic">nobody planned for.</span></h2>
+    <p class="value-sub reveal reveal-d2">From quiet glances across a crowded mandap to the tears that catch you by surprise &mdash;<br class="hide-mob">we preserve the raw emotion and laughter that make your celebration truly unforgettable.</p>
+  </div>
+</section>
+
+<!-- ============ SHOWREEL BAND (static) ============ -->
+<section class="showreel" id="showreel">
+  <div class="showreel-media">
+    <img class="showreel-poster" src="images/embrace-sky.webp" alt="" loading="lazy" aria-hidden="true">
+    <video class="showreel-video" id="showreelVideo" muted loop playsinline preload="none" aria-hidden="true"></video>
+    <span class="showreel-veil"></span>
+  </div>
+
+  <div class="wrap showreel-copy">
+    <span class="eyebrow light reveal">The Showreel</span>
+    <h2 class="split">Every wedding is a film<br>waiting to be cut.</h2>
+    <p class="reveal reveal-d2">We record the speeches in full. The shehnai. The exact second a brother&rsquo;s voice breaks. Nothing is staged for the edit, because the edit is only ever as honest as the day was.</p>
+    <button class="btn btn-slab sr-play reveal reveal-d3" type="button" data-film-key="showcase" hidden>Play the showreel</button>
   </div>
 </section>
 
@@ -366,6 +397,17 @@
       <div class="svc-row"><span class="n">03</span><h4>Pre-Wedding &amp; Couple Shoots</h4><p>Concept-led sessions at forts, beaches, backwaters and city streets across India.</p></div>
       <div class="svc-row"><span class="n">04</span><h4>Destination Weddings</h4><p>Multi-day coverage anywhere — Udaipur palaces to Bali cliffs, crew and gear included.</p></div>
     </div>
+  </div>
+
+  <!-- Selected films. Populated by app.js from the FILMS list plus anything in
+       the Drive "Video" folder; the whole block stays hidden while empty. -->
+  <div class="wrap films-block" id="filmsBlock" hidden>
+    <div class="section-head center reveal">
+      <span class="eyebrow">Wedding Films</span>
+      <h2 class="split">Selected Films</h2>
+      <p>Press play — sound on, if you can. These are best watched the way they were cut.</p>
+    </div>
+    <div class="films-grid" id="filmsGrid"></div>
   </div>
 </section>
 
@@ -414,9 +456,9 @@
 </section>
 
 <!-- ============ CINEMATIC QUOTE STRIP ============ -->
-<div class="cine-strip" data-parallax>
-  <div class="cine-bg" style="background-image:url('images/smoke-cannons.webp')"></div>
-  <blockquote>
+<div class="cine-strip" data-fx="drift" data-fx-scale="1.30">
+  <div class="cine-bg" data-fx-target style="background-image:url('images/smoke-cannons.webp')"></div>
+  <blockquote data-fx-counter>
     "A wedding film should feel like a memory you already have — just one you didn't know you'd captured."
     <cite>— Anantha Ramu, Founder</cite>
   </blockquote>
@@ -534,9 +576,9 @@
 </section>
 
 <!-- ============ FULL-BLEED CTA BAND ============ -->
-<section class="cta-band" data-parallax>
-  <div class="cta-bg" style="background-image:url('images/bride-pink-saree.webp')"></div>
-  <div class="cta-inner">
+<section class="cta-band" data-fx="drift" data-fx-scale="1.30">
+  <div class="cta-bg" data-fx-target style="background-image:url('images/bride-pink-saree.webp')"></div>
+  <div class="cta-inner" data-fx-counter>
     <h2 class="cta-line">
       <span class="cta-text">Capturing love, beyond all boundaries.</span>
       <svg class="cta-ring" viewBox="0 0 640 90" preserveAspectRatio="none" aria-hidden="true">
@@ -749,6 +791,18 @@
     </div>
   </div>
 </footer>
+
+<!-- ============ VIDEO MODAL ============ -->
+<div class="video-modal" id="videoModal" role="dialog" aria-modal="true" aria-label="Film player">
+  <div class="vm-blur" id="vmBlur" aria-hidden="true"></div>
+  <button class="vm-close" id="vmClose" type="button" aria-label="Close film">&#10005;</button>
+  <div class="vm-body">
+    <!-- the player is built here on open and torn out on close, so audio can
+         never keep running behind the page -->
+    <div class="vm-stage" id="vmStage"></div>
+    <div class="vm-title" id="vmTitle"></div>
+  </div>
+</div>
 
 <button class="totop" id="toTop" aria-label="Back to top">&#8593;</button>
 
