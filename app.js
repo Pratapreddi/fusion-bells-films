@@ -422,16 +422,16 @@
       key: 'showcase',
       title: 'Gowthami & Samarth',
       label: 'Pre-wedding film',
-      type: 'file',
-      sources: ['video/hero-loop.mp4', 'video/hero-loop.webm'],
+      type: 'drive',
+      id: '19EfXj8FfKqQWbt1k8X5nU8fjyhKhzdD6',
       poster: 'images/embrace-sky.webp'
     },
     {
       key: 'dubai',
       title: 'Dubai Pre-wedding',
       label: 'Pre-wedding film',
-      type: 'file',
-      sources: ['video/dubai.mp4', 'video/dubai.webm'],
+      type: 'drive',
+      id: '1i9r8MXDAMif_WN1NYXsmDstZsXc_qw4h',
       poster: 'images/light-dancers.webp'
     }
   ];
