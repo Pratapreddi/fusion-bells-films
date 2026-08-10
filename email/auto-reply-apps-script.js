@@ -143,7 +143,7 @@ function buildPlainBody_() {
     '',
     '--',
     'FUSION BELLS FILMS',
-    'Hosakerehalli, Bengaluru, Karnataka 560085',
+    'Hosakerehalli, Bangalore, Karnataka 560085',
     '+91 89705 11524 / +91 74116 87671',
     'hello@fusionbellsfilms.com | https://fusionbellsfilms.com',
     'Studio hours - Monday to Saturday, 10:00 am to 7:00 pm IST',
