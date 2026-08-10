@@ -1,123 +1,236 @@
 /**
  * ============================================================
- * FUSION BELLS FILMS — Google Apps Script for Gallery
- * Folder ID: 1i_WpYgn7Jn4km10IWl5Mb2DlfVM2lPxB
+ * FUSION BELLS FILMS — Google Drive Gallery API
+ * Root folder ID: 1i_WpYgn7Jn4km10IWl5Mb2DlfVM2lPxB
  * ============================================================
  *
- * HOW TO DEPLOY:
- * 1. Go to https://script.google.com/ and click "New project".
- * 2. Delete existing code and paste this entire file.
- * 3. Click "Deploy" > "New deployment".
- * 4. Select type: "Web app".
- * 5. Set:
- *    - Description: "Fusion Bells Films Gallery API"
- *    - Execute as: "Me"
- *    - Who has access: "Anyone" (CRITICAL for website access)
- * 6. Click "Deploy" and authorize permissions.
- * 7. Copy the "Web App URL" (ends with /exec).
- * 8. Paste that URL into your `app.js` in `GDRIVE_API_URL`.
+ * WHAT IT DOES
+ * Walks the whole Drive tree (not just the first level) and turns every
+ * wedding subfolder into a gallery category on the website.
+ *
+ * EXPECTED FOLDER SHAPE (matches your Drive today):
+ *
+ *   Fusion Bells Films/
+ *     Photos/
+ *       DUBAI PRE WED (1)/   -> category "Dubai Pre Wed"
+ *       Engagement/          -> category "Engagement"
+ *       Haldi & wedding/     -> category "Haldi & Wedding"
+ *       Monisha & Mohith/    -> category "Monisha & Mohith"
+ *       Prewedding/          -> category "Prewedding"
+ *       Reception/           -> category "Reception"
+ *       Sanjana/             -> category "Sanjana"
+ *       Wedding Photos/      -> category "Wedding Photos"
+ *     Founder/               -> founder portrait (NOT shown in the gallery)
+ *     Logo/                  -> ignored
+ *     Video/                 -> ignored
+ *
+ * Nested folders deeper than that (e.g. Photos/Engagement/Selects) are
+ * rolled up into their nearest named category.
+ *
+ * ============================================================
+ * HOW TO (RE)DEPLOY  — required for any change here to go live
+ * ============================================================
+ * 1. Open https://script.google.com/ and open your existing project
+ *    ("Fusion Bells Films Gallery API").
+ * 2. Select all the old code and paste this entire file over it. Save.
+ * 3. Click "Deploy" > "Manage deployments".
+ * 4. Click the pencil (Edit) on the active deployment.
+ * 5. Under "Version" choose "New version", then click "Deploy".
+ *    -> This keeps the SAME /exec URL, so the website needs no change.
+ *    (Using "New deployment" instead creates a NEW url — if you do that,
+ *     paste the new /exec url into GDRIVE_API_URL in app.js.)
+ * 6. Load the /exec url in a browser to confirm you see the new JSON.
+ *
+ * NOTE: results are cached for 3 hours. After uploading new photos, either
+ * wait, or open  <your /exec url>?refresh=1  once to rebuild immediately.
  */
 
 const ROOT_FOLDER_ID = "1i_WpYgn7Jn4km10IWl5Mb2DlfVM2lPxB";
 
+// Folder names that are never gallery categories.
+const IGNORED_FOLDERS  = ["logo", "logos", "branding", "video", "videos", "raw", "private"];
+// Folder holding the founder portrait.
+const FOUNDER_FOLDERS  = ["founder", "founders", "about", "team"];
+// Pass-through containers: their SUBFOLDERS become the categories.
+const CONTAINER_FOLDERS = ["photos", "photo", "gallery", "galleries", "portfolio"];
+
+// Keep the payload small enough to stay fast on mobile.
+const MAX_PER_CATEGORY = 30;
+const MAX_TOTAL        = 240;
+const CACHE_SECONDS    = 3 * 60 * 60;
+
 function doGet(e) {
+  const wantsRefresh = e && e.parameter && e.parameter.refresh;
+  const cache = CacheService.getScriptCache();
+
+  if (!wantsRefresh) {
+    try {
+      const hit = cache.get("fbf_gallery_payload");
+      if (hit) return json(hit);
+    } catch (err) { /* cache miss is fine */ }
+  }
+
   try {
-    const rootFolder = DriveApp.getFolderById(ROOT_FOLDER_ID);
-    const categoriesMap = {};
-    const photos = [];
-    let frameIndex = 1;
+    const root = DriveApp.getFolderById(ROOT_FOLDER_ID);
+
+    const buckets = {};   // slug -> { name, files: [] }
+    const order   = [];   // preserves discovery order
+    let founder   = null;
 
     function slugify(text) {
-      return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      return String(text).toLowerCase()
+        .replace(/\([^)]*\)/g, " ")          // drop "(1)" style suffixes
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "");
     }
 
-    function addPhoto(file, categorySlug, categoryName) {
-      const mime = file.getMimeType();
-      if (mime.indexOf('image/') !== -1) {
-        const fileId = file.getId();
-        const thumbUrl = "https://lh3.googleusercontent.com/d/" + fileId + "=w1000";
-        const fullUrl = "https://lh3.googleusercontent.com/d/" + fileId + "=w2048";
+    function prettify(text) {
+      return String(text).replace(/\([^)]*\)/g, "").replace(/[_-]+/g, " ").trim()
+        .replace(/\s+/g, " ")
+        .replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+    }
 
-        photos.push({
-          id: fileId,
-          frameNo: String(frameIndex++).padStart(2, '0'),
-          title: file.getName().replace(/\.[^/.]+$/, "").replace(/[-_]/g, " "),
-          category: categorySlug,
-          categoryName: categoryName,
-          thumb: thumbUrl,
-          full: fullUrl
-        });
+    function isImage(file) {
+      return file.getMimeType().indexOf("image/") === 0;
+    }
 
-        if (categorySlug !== 'all' && categorySlug !== 'logo') {
-          categoriesMap[categorySlug] = categoryName;
+    function push(file, slug, name) {
+      if (!isImage(file)) return;
+      if (!buckets[slug]) { buckets[slug] = { name: name, files: [] }; order.push(slug); }
+      if (buckets[slug].files.length >= MAX_PER_CATEGORY) return;
+      buckets[slug].files.push(file);
+    }
+
+    // Depth-first walk. `slug`/`name` is the category the current folder
+    // contributes to; null means "this folder only routes its children".
+    function walk(folder, slug, name, depth) {
+      if (depth > 4) return;
+
+      const files = folder.getFiles();
+      while (files.hasNext()) {
+        const file = files.next();
+        if (slug) push(file, slug, name);
+      }
+
+      const subs = folder.getFolders();
+      while (subs.hasNext()) {
+        const sub     = subs.next();
+        const rawName = sub.getName().trim();
+        const key     = rawName.toLowerCase();
+
+        if (IGNORED_FOLDERS.indexOf(key) !== -1) continue;
+
+        if (FOUNDER_FOLDERS.indexOf(key) !== -1) {
+          if (!founder) founder = firstImage(sub);
+          continue;
+        }
+
+        if (CONTAINER_FOLDERS.indexOf(key) !== -1) {
+          walk(sub, null, null, depth + 1);           // children become categories
+          continue;
+        }
+
+        if (slug) {
+          walk(sub, slug, name, depth + 1);           // roll up into parent category
+        } else {
+          walk(sub, slugify(rawName), prettify(rawName), depth + 1);
         }
       }
     }
 
-    // 1. Scan subfolders of Root
-    const subfolders = rootFolder.getFolders();
-    while (subfolders.hasNext()) {
-      const folder = subfolders.next();
-      const folderName = folder.getName().trim();
-      const folderSlug = slugify(folderName);
+    // Two independent Google image hosts for the same file. The site tries
+    // the first and silently falls back to the second, which keeps the
+    // gallery intact when one host rate-limits a burst of requests.
+    function driveUrl(id, width) {
+      return "https://drive.google.com/thumbnail?id=" + id + "&sz=w" + width;
+    }
+    function lh3Url(id, width) {
+      return "https://lh3.googleusercontent.com/d/" + id + "=w" + width;
+    }
+    function cleanTitle(name) {
+      return name.replace(/(\.[A-Za-z0-9]{2,5})+$/, "").replace(/[-_]+/g, " ").trim();
+    }
 
-      // If this is the "Photos" folder, check for nested categories (e.g. Photos/Haldi, Photos/Ceremony)
-      if (folderSlug === 'photos') {
-        const nestedFolders = folder.getFolders();
-        let hasNested = false;
-        while (nestedFolders.hasNext()) {
-          hasNested = true;
-          const nested = nestedFolders.next();
-          const nestedName = nested.getName().trim();
-          const nestedSlug = slugify(nestedName);
-
-          const nestedFiles = nested.getFiles();
-          while (nestedFiles.hasNext()) {
-            addPhoto(nestedFiles.next(), nestedSlug, nestedName);
-          }
-        }
-
-        // Direct files in Photos folder
-        const directFiles = folder.getFiles();
-        while (directFiles.hasNext()) {
-          addPhoto(directFiles.next(), "featured", "Featured");
-        }
-      } else if (folderSlug !== 'video') {
-        // Normal subfolder (e.g. Haldi, Ceremony, Logo)
-        const files = folder.getFiles();
-        while (files.hasNext()) {
-          addPhoto(files.next(), folderSlug, folderName);
+    function firstImage(folder) {
+      const files = folder.getFiles();
+      while (files.hasNext()) {
+        const f = files.next();
+        if (isImage(f)) {
+          return {
+            id: f.getId(),
+            name: f.getName(),
+            thumb: driveUrl(f.getId(), 900),
+            full: driveUrl(f.getId(), 1600),
+            fullAlt: lh3Url(f.getId(), 1600)
+          };
         }
       }
+      // look one level deeper before giving up
+      const subs = folder.getFolders();
+      while (subs.hasNext()) {
+        const found = firstImage(subs.next());
+        if (found) return found;
+      }
+      return null;
     }
 
-    // 2. Direct files in Root folder
-    const rootFiles = rootFolder.getFiles();
-    while (rootFiles.hasNext()) {
-      addPhoto(rootFiles.next(), "featured", "Featured");
-    }
+    walk(root, null, null, 0);
 
-    const categories = Object.keys(categoriesMap).map(function(key) {
-      return { id: key, name: categoriesMap[key] };
+    // Interleave categories so the "All" view opens with a varied contact
+    // sheet instead of 30 frames from one wedding in a row.
+    const photos     = [];
+    const categories = [];
+    let frameIndex   = 1;
+
+    order.forEach(function (slug) {
+      const bucket = buckets[slug];
+      if (!bucket.files.length) return;
+      categories.push({ id: slug, name: bucket.name, count: bucket.files.length });
     });
 
-    const output = {
+    let cursor = 0;
+    let added  = true;
+    while (added && photos.length < MAX_TOTAL) {
+      added = false;
+      for (let i = 0; i < order.length && photos.length < MAX_TOTAL; i++) {
+        const bucket = buckets[order[i]];
+        if (!bucket || cursor >= bucket.files.length) continue;
+        const file = bucket.files[cursor];
+        const id   = file.getId();
+        photos.push({
+          id: id,
+          frameNo: String(frameIndex++).padStart(2, "0"),
+          title: cleanTitle(file.getName()),
+          category: order[i],
+          categoryName: bucket.name,
+          thumb: driveUrl(id, 1000),
+          thumbAlt: lh3Url(id, 1000),
+          full: driveUrl(id, 2048),
+          fullAlt: lh3Url(id, 2048)
+        });
+        added = true;
+      }
+      cursor++;
+    }
+
+    const payload = JSON.stringify({
       status: "success",
       folderId: ROOT_FOLDER_ID,
+      generated: new Date().toISOString(),
+      founder: founder,
       categories: categories,
       totalPhotos: photos.length,
       photos: photos
-    };
+    });
 
-    return ContentService.createTextOutput(JSON.stringify(output))
-      .setMimeType(ContentService.MimeType.JSON);
+    try { cache.put("fbf_gallery_payload", payload, CACHE_SECONDS); } catch (err) { /* too big to cache */ }
+    return json(payload);
 
   } catch (err) {
-    const errorOutput = {
-      status: "error",
-      message: err.toString()
-    };
-    return ContentService.createTextOutput(JSON.stringify(errorOutput))
-      .setMimeType(ContentService.MimeType.JSON);
+    return json(JSON.stringify({ status: "error", message: err.toString() }));
   }
+}
+
+function json(text) {
+  return ContentService.createTextOutput(text).setMimeType(ContentService.MimeType.JSON);
 }

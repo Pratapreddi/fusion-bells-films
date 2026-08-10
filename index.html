@@ -16,8 +16,8 @@
 <!-- Geo & Local SEO — Primary: Bengaluru, Serving: All India -->
 <meta name="geo.region" content="IN">
 <meta name="geo.placename" content="India">
-<meta name="geo.position" content="12.9784;77.6408">
-<meta name="ICBM" content="12.9784, 77.6408">
+<meta name="geo.position" content="12.9333305;77.5361861">
+<meta name="ICBM" content="12.9333305, 77.5361861">
 
 <!-- Open Graph / Facebook / WhatsApp -->
 <meta property="og:type" content="website">
@@ -36,14 +36,14 @@
 <meta name="twitter:image" content="https://lh3.googleusercontent.com/d/1tW6i02qYJrr94DZh-M144HtvmTKJtkH-=w1200">
 
 <!-- Theme & Mobile styling -->
-<meta name="theme-color" content="#14100D">
+<meta name="theme-color" content="#F7F3EC">
 <meta name="msapplication-TileColor" content="#14100D">
 
 <!-- Fonts & Preconnect -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Instrument+Serif:ital@1&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
-<link rel="icon" type="image/png" href="https://lh3.googleusercontent.com/d/1tW6i02qYJrr94DZh-M144HtvmTKJtkH-=w1000">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Karla:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="images/logo-mark.png">
 <link rel="stylesheet" href="styles.css">
 
 <!-- JSON-LD Structured Data Schema for Google Rich Snippets -->
@@ -57,8 +57,18 @@
   "@id": "https://fusionbellsfilms.com/#business",
   "url": "https://fusionbellsfilms.com/",
   "telephone": "+91-8970511524",
+  "contactPoint": [
+    { "@type": "ContactPoint", "telephone": "+91-8970511524", "contactType": "customer service", "areaServed": "IN" },
+    { "@type": "ContactPoint", "telephone": "+91-7411687671", "contactType": "bookings", "areaServed": "IN" }
+  ],
   "email": "hello@fusionbellsfilms.com",
   "priceRange": "₹₹₹",
+  "openingHoursSpecification": {
+    "@type": "OpeningHoursSpecification",
+    "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],
+    "opens": "10:00",
+    "closes": "19:00"
+  },
   "founder": {
     "@type": "Person",
     "name": "Anantha Ramu",
@@ -66,16 +76,16 @@
   },
   "address": {
     "@type": "PostalAddress",
-    "streetAddress": "Indiranagar",
+    "streetAddress": "Hosakerehalli",
     "addressLocality": "Bengaluru",
     "addressRegion": "Karnataka",
-    "postalCode": "560038",
+    "postalCode": "560085",
     "addressCountry": "IN"
   },
   "geo": {
     "@type": "GeoCoordinates",
-    "latitude": 12.9784,
-    "longitude": 77.6408
+    "latitude": 12.9333305,
+    "longitude": 77.5361861
   },
   "areaServed": [
     { "@type": "Country", "name": "India" },
@@ -100,7 +110,7 @@
   ],
   "aggregateRating": {
     "@type": "AggregateRating",
-    "ratingValue": "4.9",
+    "ratingValue": "5",
     "bestRating": "5",
     "ratingCount": "180"
   },
@@ -152,42 +162,96 @@
 </head>
 <body>
 
+<!-- ============ PAGE LOADER ============ -->
+<div class="loader" id="loader">
+  <div class="loader-inner">
+    <img src="images/logo-full.png" alt="" class="loader-mark">
+    <span class="loader-word">Fusion Bells Films</span>
+    <span class="loader-bar"><i></i></span>
+  </div>
+</div>
+
 <!-- ============ NAV ============ -->
 <header class="site-nav" id="siteNav">
   <div class="wrap nav-inner">
-    <a href="#home" class="brand"><img src="https://lh3.googleusercontent.com/d/1tW6i02qYJrr94DZh-M144HtvmTKJtkH-=w1000" alt="Fusion Bells Films" class="brand-mark">Fusion Bells Films</a>
-    <nav class="nav-links" id="navLinks">
+    <nav class="nav-links nav-left" aria-label="Primary">
       <a href="#home">Home</a>
-      <a href="#story">Story</a>
-      <a href="#films">Films</a>
-      <a href="#reviews">Reviews</a>
-      <a href="#journal">Journal</a>
-      <a href="#contact" class="nav-cta">Enquire</a>
+      <a href="gallery.html">Gallery</a>
+      <a href="#films">Wedding Films</a>
     </nav>
-    <button class="nav-toggle" id="navToggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+
+    <a href="#home" class="brand" aria-label="Fusion Bells Films — home">
+      <img src="images/logo-full.png" alt="Fusion Bells Films" class="brand-mark">
+    </a>
+
+    <nav class="nav-links nav-right" aria-label="Secondary">
+      <a href="#story">About Us</a>
+      <a href="#journal">Our Blog</a>
+      <a href="#contact">Contact Us</a>
+    </nav>
+
+    <button class="nav-toggle" id="navToggle" aria-label="Open menu" aria-expanded="false">
+      <span class="nt-label" id="ntLabel">Menu</span>
+      <span class="nt-bars"><i></i><i></i></span>
+    </button>
   </div>
 </header>
 
-<!-- ============ HERO ============ -->
+<!-- ============ FULLSCREEN MENU OVERLAY ============ -->
+<div class="menu-overlay" id="menuOverlay">
+  <div class="menu-inner wrap">
+    <div class="menu-links">
+      <a href="#home"><em>01</em>Home</a>
+      <a href="gallery.html"><em>02</em>Gallery</a>
+      <a href="#films"><em>03</em>Wedding Films</a>
+      <a href="#story"><em>04</em>About Us</a>
+      <a href="#reviews"><em>05</em>Reviews</a>
+      <a href="#journal"><em>06</em>Our Blog</a>
+      <a href="#contact"><em>07</em>Contact Us</a>
+    </div>
+    <div class="menu-aside">
+      <div class="ma-block">
+        <span class="lbl">Studio</span>
+        <p>Hosakerehalli, Bengaluru 560085<br>Shooting across India &amp; worldwide</p>
+      </div>
+      <div class="ma-block">
+        <span class="lbl">Enquiries</span>
+        <p><a href="tel:+918970511524">+91 89705 11524</a><br><a href="tel:+917411687671">+91 74116 87671</a><br><a href="mailto:hello@fusionbellsfilms.com">hello@fusionbellsfilms.com</a></p>
+      </div>
+      <div class="ma-block">
+        <span class="lbl">Follow</span>
+        <p><a href="https://instagram.com/fusionbellsfilms" target="_blank" rel="noopener">Instagram</a> &nbsp;/&nbsp; <a href="https://youtube.com/@fusionbellsfilms" target="_blank" rel="noopener">YouTube</a> &nbsp;/&nbsp; <a href="https://facebook.com/fusionbellsfilms" target="_blank" rel="noopener">Facebook</a></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ HERO CAROUSEL ============ -->
 <section class="hero" id="home">
   <div class="hero-slides" id="heroSlides">
     <div class="hero-slide active" style="background-image:url('images/embrace-sky.webp')"></div>
     <div class="hero-slide" style="background-image:url('images/smoke-cannons.webp')"></div>
     <div class="hero-slide" style="background-image:url('images/hero-garland.webp')"></div>
     <div class="hero-slide" style="background-image:url('images/haldi-hands-circle.webp')"></div>
+    <div class="hero-slide" style="background-image:url('images/varmala-moment.webp')"></div>
+    <div class="hero-slide" style="background-image:url('images/mandap-laughter.webp')"></div>
   </div>
-  <div class="hero-frame-count">FRAME <span id="frameNo">01</span> / 04 — BENGALURU</div>
+
+  <div class="hero-frame-count">FRAME <span id="frameNo">01</span> / 06 — INDIA</div>
+
   <div class="wrap hero-content">
     <div class="hero-text">
-      <span class="eyebrow">Fusion Bells Films — Bengaluru &amp; Mysuru</span>
-      <h1 class="hero-title">Every vow,<br><span class="italic">told like a film.</span></h1>
-      <p class="hero-sub">A boutique wedding photography and cinematography studio crafting honest, cinematic love stories — from the first haldi turmeric stain to the last dance under the mandap lights.</p>
+      <span class="eyebrow light">Candid Wedding Photographers &amp; Filmmakers</span>
+      <h1 class="hero-title split">Crafting Timeless<br><span class="italic">Wedding Stories</span></h1>
+      <p class="hero-sub">You bring the love — we tell the story. A boutique studio crafting honest, cinematic wedding photographs and films across Bengaluru, India and destinations beyond.</p>
       <div class="hero-actions">
-        <a href="#films" class="btn btn-solid">View Our Films</a>
-        <a href="https://wa.me/918970511524?text=Hi%20Fusion%20Bells%20Films%2C%20I%27d%20love%20to%20know%20more%20about%20wedding%20photography%20packages." target="_blank" rel="noopener" class="btn btn-ghost">Chat on WhatsApp</a>
+        <a href="#work" class="btn btn-solid">View the gallery</a>
+        <a href="#contact" class="btn btn-ghost-light">Contact us</a>
       </div>
     </div>
   </div>
+
+  <div class="hero-dots" id="heroDots"></div>
   <div class="scroll-cue"><span>Scroll</span><span class="line"></span></div>
 </section>
 
@@ -199,21 +263,128 @@
   </div>
 </div>
 
-<!-- ============ ABOUT / FOUNDER ============ -->
+<!-- ============ INTRO ============ -->
+<section class="intro">
+  <div class="wrap intro-inner">
+    <span class="eyebrow reveal">Fusion Bells Films</span>
+    <p class="intro-lead reveal reveal-d1">We are a team of passionate wedding photographers and cinematographers based in Bengaluru, specialising in candid storytelling and destination weddings — preserving the emotions, the traditions and the small, unrepeatable memories that make your day yours.</p>
+    <div class="intro-stats">
+      <div class="stat reveal reveal-d1"><b class="count" data-to="600">0</b><span>Weddings framed</span></div>
+      <div class="stat reveal reveal-d2"><b class="count" data-to="20">0</b><span>Cities covered</span></div>
+      <div class="stat reveal reveal-d3"><b class="count" data-to="9">0</b><span>Years behind the lens</span></div>
+      <div class="stat reveal reveal-d4"><b>5.0</b><span>Average client rating</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FRAMING YOUR FOREVER — feature grid ============ -->
+<section class="forever">
+  <div class="wrap">
+    <div class="section-head center reveal">
+      <span class="eyebrow">Selected Frames</span>
+      <h2 class="split">Framing your Forever</h2>
+      <p>Six moments from six different weddings — no set-ups, no re-takes, nothing asked for twice.</p>
+    </div>
+  </div>
+
+  <div class="forever-grid">
+    <figure class="fv-item tall reveal"><img src="images/hero-garland.webp" loading="lazy" alt="Bride and groom exchanging garlands at an Indian wedding"><figcaption><span>Varmala</span> Bengaluru</figcaption></figure>
+    <figure class="fv-item reveal reveal-d1"><img src="images/haldi-sunglasses.webp" loading="lazy" alt="Groom in sunglasses during a haldi ceremony"><figcaption><span>Haldi</span> Mysuru</figcaption></figure>
+    <figure class="fv-item reveal reveal-d2"><img src="images/rings-foreheads.webp" loading="lazy" alt="Couple touching foreheads, rings visible"><figcaption><span>Engagement</span> Goa</figcaption></figure>
+    <figure class="fv-item tall reveal reveal-d1"><img src="images/bride-firelight.webp" loading="lazy" alt="Bridal portrait lit by firelight"><figcaption><span>Portrait</span> Udaipur</figcaption></figure>
+    <figure class="fv-item reveal reveal-d2"><img src="images/mandap-laughter.webp" loading="lazy" alt="Laughter under the mandap during the ceremony"><figcaption><span>Mandap</span> Chennai</figcaption></figure>
+    <figure class="fv-item reveal reveal-d3"><img src="images/light-dancers.webp" loading="lazy" alt="Performers with lights at a wedding reception"><figcaption><span>Reception</span> Hyderabad</figcaption></figure>
+  </div>
+</section>
+
+<!-- ============ FEATURED FULL-WIDTH CAROUSEL ============ -->
+<section class="featured" aria-label="Featured stories">
+  <div class="feat-viewport">
+    <div class="feat-track" id="featTrack">
+      <article class="feat-slide" style="background-image:url('images/temple-walk.webp')">
+        <div class="feat-copy wrap">
+          <span class="eyebrow light">Story No. 01</span>
+          <h3>Ananya &amp; Karthik</h3>
+          <p>A heritage temple wedding at first light — barefoot, unhurried, and lit entirely by the sun.</p>
+        </div>
+      </article>
+      <article class="feat-slide" style="background-image:url('images/smoke-cannons.webp')">
+        <div class="feat-copy wrap">
+          <span class="eyebrow light">Story No. 02</span>
+          <h3>Ishita &amp; Rohan</h3>
+          <p>Smoke cannons, a live band, and a baraat that refused to end before sunrise.</p>
+        </div>
+      </article>
+      <article class="feat-slide" style="background-image:url('images/quiet-couple.webp')">
+        <div class="feat-copy wrap">
+          <span class="eyebrow light">Story No. 03</span>
+          <h3>Meera &amp; Aditya</h3>
+          <p>Forty guests, one courtyard, and the quietest ten seconds of the entire day.</p>
+        </div>
+      </article>
+    </div>
+  </div>
+  <div class="feat-ui wrap">
+    <button class="feat-arrow" id="featPrev" aria-label="Previous story">&#8592;</button>
+    <div class="feat-bars" id="featBars"></div>
+    <button class="feat-arrow" id="featNext" aria-label="Next story">&#8594;</button>
+  </div>
+</section>
+
+<!-- ============ VALUE PROPOSITION ============ -->
+<section class="value">
+  <div class="wrap">
+    <h2 class="value-line split reveal">Your wedding day is a celebration of love, joy, and unforgettable memories.</h2>
+    <p class="value-sub reveal reveal-d2">We photograph it and we film it — two crafts, one crew, one shared obsession with the moments nobody thought to pose for.</p>
+  </div>
+</section>
+
+<!-- ============ TWO-COLUMN SERVICE BLOCKS ============ -->
+<section class="services" id="films">
+  <div class="wrap svc-grid">
+    <article class="svc reveal">
+      <div class="svc-media"><img src="images/portrait-green-saree.webp" width="1920" height="1280" loading="lazy" alt="Candid bridal portrait in a green saree"></div>
+      <span class="svc-label">Pictures</span>
+      <h3>Authentic Love,<br>Artfully Captured</h3>
+      <p>Our photography captures raw, candid moments with a timeless, classic touch. Through documentary-style storytelling and artful black-and-white frames, we preserve the essence of your love — not a version of it arranged for the camera.</p>
+      <a href="#work" class="link-arrow">Gallery</a>
+    </article>
+
+    <article class="svc reveal reveal-d2">
+      <div class="svc-media"><img src="images/haldi-action.webp" width="1920" height="1279" loading="lazy" alt="Cinematic frame of a couple photographed in available light"></div>
+      <span class="svc-label">Films</span>
+      <h3>Stories Woven in<br>Light and Motion</h3>
+      <p>Each frame is a whisper of your love, each cut a heartbeat. Our films carry the weight of memory and the lightness of joy — a gentle retelling of your day, hand-graded and scored so it plays like the film it always was.</p>
+      <a href="#journal" class="link-arrow">Love Stories</a>
+    </article>
+  </div>
+
+  <div class="wrap">
+    <div class="svc-list reveal">
+      <div class="svc-row"><span class="n">01</span><h4>Candid Wedding Photography</h4><p>Full-day documentary coverage, hand-curated galleries, and heirloom albums.</p></div>
+      <div class="svc-row"><span class="n">02</span><h4>Cinematic Wedding Films</h4><p>4K highlight films, teasers and long-form documentary edits, colour-graded in-house.</p></div>
+      <div class="svc-row"><span class="n">03</span><h4>Pre-Wedding &amp; Couple Shoots</h4><p>Concept-led sessions at forts, beaches, backwaters and city streets across India.</p></div>
+      <div class="svc-row"><span class="n">04</span><h4>Destination Weddings</h4><p>Multi-day coverage anywhere — Udaipur palaces to Bali cliffs, crew and gear included.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ STUDIO / FOUNDER ============ -->
 <section class="about" id="story">
   <div class="wrap about-grid">
     <div class="about-media reveal">
-      <img src="images/quiet-couple.webp" alt="Anantha Ramu style candid portrait of a couple sharing a quiet moment" loading="lazy">
+      <!-- Swapped for the portrait in the Drive "Founder" folder when available -->
+      <img id="founderPhoto" src="images/quiet-couple.webp" alt="Anantha Ramu, founder and lead cinematographer at Fusion Bells Films" loading="lazy">
       <div class="frame-tag">
-        <div class="num">120+</div>
+        <div class="num">600+</div>
         <div class="lbl">Weddings framed since 2016</div>
       </div>
     </div>
     <div class="about-copy">
       <span class="eyebrow reveal">The Studio</span>
-      <h2 class="reveal reveal-d1">Founded on the belief that <span class="italic script" style="font-size:1.05em;">real</span> moments outshine posed ones.</h2>
+      <h2 class="reveal reveal-d1">Founded on the belief that <span class="italic">real</span> moments outshine posed ones.</h2>
       <p class="reveal reveal-d2">Fusion Bells Films began in a small Bengaluru apartment with one camera, one promise, and a founder — <strong>Anantha Ramu</strong> — who believed weddings deserved to be documented the way great films are made: with patience, restraint, and an eye trained to wait for the unguarded second.</p>
-      <p class="reveal reveal-d3">What started as a one-man crew covering intimate Karnataka weddings has grown into a full studio of photographers, cinematographers, and editors — yet the approach hasn't changed. We don't direct your day. We disappear into it, and hand it back to you as something you'll want to watch again on your twentieth anniversary.</p>
+      <p class="reveal reveal-d3">What started as a one-man crew covering intimate Karnataka weddings has grown into a full studio of photographers, cinematographers and editors — yet the approach hasn't changed. We don't direct your day. We disappear into it, and hand it back to you as something you'll want to watch again on your twentieth anniversary.</p>
       <div class="about-sign reveal reveal-d4">
         <span class="script">Anantha Ramu</span>
         <span class="role">Founder &amp; Lead Cinematographer</span>
@@ -242,8 +413,9 @@
   </div>
 </section>
 
-<!-- ============ CINEMATIC STRIP ============ -->
-<div class="cine-strip" style="background-image:url('images/smoke-cannons.webp')">
+<!-- ============ CINEMATIC QUOTE STRIP ============ -->
+<div class="cine-strip" data-parallax>
+  <div class="cine-bg" style="background-image:url('images/smoke-cannons.webp')"></div>
   <blockquote>
     "A wedding film should feel like a memory you already have — just one you didn't know you'd captured."
     <cite>— Anantha Ramu, Founder</cite>
@@ -251,191 +423,273 @@
 </div>
 
 <!-- ============ GALLERY ============ -->
-<section id="films">
+<section class="work" id="work">
   <div class="wrap">
-    <div class="section-head reveal">
-      <span class="eyebrow">Selected Work</span>
-      <h2>A contact sheet<br>of real weddings.</h2>
-      <p>Every frame below is unretouched from an actual Fusion Bells Films wedding — filter by chapter, or click any frame to view it full screen.</p>
+    <div class="section-head center reveal">
+      <span class="eyebrow">The Gallery</span>
+      <h2 class="split">A contact sheet of real weddings</h2>
+      <p>Every frame below comes from an actual Fusion Bells Films wedding — filter by chapter, or click any frame to view it full screen.</p>
+      <a href="gallery.html" class="btn btn-ghost" style="margin-top:26px;">View the full gallery</a>
     </div>
 
-    <div class="gallery-filters reveal">
-      <button class="gf-btn active" data-filter="all">All</button>
-      <button class="gf-btn" data-filter="haldi">Haldi &amp; Mehndi</button>
-      <button class="gf-btn" data-filter="ceremony">Ceremony</button>
-      <button class="gf-btn" data-filter="portraits">Portraits</button>
-      <button class="gf-btn" data-filter="details">Details</button>
-    </div>
 
     <div class="contact-sheet" id="gallery">
-      <!-- Live frames dynamically synced from Google Drive -->
+      <div class="frame" data-cat="ceremony" data-full="images/hero-garland.webp"><img src="images/hero-garland.webp" loading="lazy" alt="Varmala garland exchange"><span class="frame-meta">Frame 01 — Ceremony</span></div>
+      <div class="frame" data-cat="haldi" data-full="images/haldi-hands-circle.webp"><img src="images/haldi-hands-circle.webp" loading="lazy" alt="Haldi hands circle"><span class="frame-meta">Frame 02 — Haldi</span></div>
+      <div class="frame" data-cat="portraits" data-full="images/bride-firelight.webp"><img src="images/bride-firelight.webp" loading="lazy" alt="Bride in firelight"><span class="frame-meta">Frame 03 — Portrait</span></div>
+      <div class="frame" data-cat="details" data-full="images/henna-hands.webp"><img src="images/henna-hands.webp" loading="lazy" alt="Henna detail"><span class="frame-meta">Frame 04 — Details</span></div>
+      <div class="frame" data-cat="ceremony" data-full="images/mandap-laughter.webp"><img src="images/mandap-laughter.webp" loading="lazy" alt="Laughter at the mandap"><span class="frame-meta">Frame 05 — Ceremony</span></div>
+      <div class="frame" data-cat="haldi" data-full="images/haldi-sunglasses.webp"><img src="images/haldi-sunglasses.webp" loading="lazy" alt="Haldi sunglasses"><span class="frame-meta">Frame 06 — Haldi</span></div>
+      <div class="frame" data-cat="portraits" data-full="images/portrait-green-saree.webp"><img src="images/portrait-green-saree.webp" loading="lazy" alt="Portrait in green saree"><span class="frame-meta">Frame 07 — Portrait</span></div>
+      <div class="frame" data-cat="details" data-full="images/bride-flower.webp"><img src="images/bride-flower.webp" loading="lazy" alt="Floral detail"><span class="frame-meta">Frame 08 — Details</span></div>
+      <div class="frame" data-cat="ceremony" data-full="images/varmala-moment.webp"><img src="images/varmala-moment.webp" loading="lazy" alt="Varmala moment"><span class="frame-meta">Frame 09 — Ceremony</span></div>
+      <div class="frame" data-cat="portraits" data-full="images/temple-walk.webp"><img src="images/temple-walk.webp" loading="lazy" alt="Temple walk portrait"><span class="frame-meta">Frame 10 — Portrait</span></div>
+      <div class="frame" data-cat="haldi" data-full="images/haldi-action.webp"><img src="images/haldi-action.webp" loading="lazy" alt="Haldi in motion"><span class="frame-meta">Frame 11 — Haldi</span></div>
+      <div class="frame" data-cat="details" data-full="images/rings-foreheads.webp"><img src="images/rings-foreheads.webp" loading="lazy" alt="Rings and foreheads"><span class="frame-meta">Frame 12 — Details</span></div>
     </div>
   </div>
 </section>
 
 <!-- lightbox -->
 <div class="lightbox" id="lightbox">
-  <button class="lb-close" id="lbClose">&#10005;</button>
-  <button class="lb-nav lb-prev" id="lbPrev">&#10094;</button>
-  <img src="" alt="" id="lbImg">
-  <button class="lb-nav lb-next" id="lbNext">&#10095;</button>
+  <div class="lb-blur" id="lbBlur" aria-hidden="true"></div>
+  <button class="lb-close" id="lbClose" aria-label="Close">&#10005;</button>
+  <button class="lb-nav lb-prev" id="lbPrev" aria-label="Previous">&#10094;</button>
+  <img src="" alt="" id="lbSidePrev" class="lb-side lb-side-prev" referrerpolicy="no-referrer" aria-hidden="true">
+  <img src="" alt="" id="lbImg" referrerpolicy="no-referrer">
+  <img src="" alt="" id="lbSideNext" class="lb-side lb-side-next" referrerpolicy="no-referrer" aria-hidden="true">
+  <button class="lb-nav lb-next" id="lbNext" aria-label="Next">&#10095;</button>
+  <div class="lb-caption" id="lbCaption"></div>
 </div>
 
 <!-- ============ TESTIMONIALS ============ -->
 <section class="testimonials" id="reviews">
   <div class="wrap">
-    <div class="section-head reveal">
+    <div class="section-head center reveal">
       <span class="eyebrow">Kind Words</span>
-      <h2>What families say,<br>after the confetti settles.</h2>
+      <h2 class="split">In Their Own Words</h2>
     </div>
 
     <div class="t-badges reveal">
-      <span class="t-badge"><b>4.9</b> / 5 on WedMeGood</span>
-      <span class="t-badge"><b>4.8</b> / 5 on WeddingWire</span>
+      <span class="t-badge"><b>5.0</b> / 5 on WedMeGood</span>
+      <span class="t-badge"><b>5.0</b> / 5 on Google</span>
       <span class="t-badge"><b>180+</b> Verified Reviews</span>
     </div>
 
     <div class="t-track-wrap reveal">
       <div class="t-track" id="tTrack">
         <div class="t-card">
-          <span class="t-quote-mark">"</span>
-          <div>
-            <p>They didn't just photograph our wedding — they seemed to understand our families before we introduced them. My mother cries every time she rewatches the haldi film.</p>
-            <div class="t-name">Ishita &amp; Rohan</div>
-            <div class="t-loc">Wedding at Bangalore Palace Grounds</div>
-          </div>
+          <span class="t-quote-mark">&ldquo;</span>
+          <p>They didn't just photograph our wedding — they seemed to understand our families before we introduced them. My mother cries every time she rewatches the haldi film.</p>
+          <div class="t-name">Ishita &amp; Rohan</div>
+          <div class="t-loc">Bangalore Palace Grounds</div>
         </div>
         <div class="t-card">
-          <span class="t-quote-mark">"</span>
-          <div>
-            <p>Anantha and his team were invisible when we needed them to be, and everywhere when it mattered. The final film felt less like a video and more like a memory we could replay.</p>
-            <div class="t-name">Meera &amp; Aditya</div>
-            <div class="t-loc">Destination wedding, Mysuru</div>
-          </div>
+          <span class="t-quote-mark">&ldquo;</span>
+          <p>Anantha and his team were invisible when we needed them to be, and everywhere when it mattered. The final film felt less like a video and more like a memory we could replay.</p>
+          <div class="t-name">Meera &amp; Aditya</div>
+          <div class="t-loc">Destination wedding, Mysuru</div>
         </div>
         <div class="t-card">
-          <span class="t-quote-mark">"</span>
-          <div>
-            <p>We interviewed six studios and picked Fusion Bells for one reason — the way they talked about light. A year later, that obsession shows in every single frame they gave us.</p>
-            <div class="t-name">Naveen &amp; Priyanka</div>
-            <div class="t-loc">Wedding at ITC Gardenia, Bengaluru</div>
-          </div>
+          <span class="t-quote-mark">&ldquo;</span>
+          <p>We interviewed six studios and picked Fusion Bells for one reason — the way they talked about light. A year later, that obsession shows in every single frame they gave us.</p>
+          <div class="t-name">Naveen &amp; Priyanka</div>
+          <div class="t-loc">ITC Gardenia, Bengaluru</div>
+        </div>
+        <div class="t-card">
+          <span class="t-quote-mark">&ldquo;</span>
+          <p>Three days, four cities, zero stress. They handled our flights, our chaotic families and a monsoon downpour — and still delivered the most beautiful set of photographs I've seen.</p>
+          <div class="t-name">Swathi &amp; Arjun</div>
+          <div class="t-loc">Kochi &amp; Munnar</div>
         </div>
       </div>
       <div class="t-controls">
-        <button class="t-arrow" id="tPrev">&#8592;</button>
-        <button class="t-dot active" data-i="0"></button>
-        <button class="t-dot" data-i="1"></button>
-        <button class="t-dot" data-i="2"></button>
-        <button class="t-arrow" id="tNext">&#8594;</button>
+        <button class="t-arrow" id="tPrev" aria-label="Previous review">&#8592;</button>
+        <div class="t-dots" id="tDots"></div>
+        <button class="t-arrow" id="tNext" aria-label="Next review">&#8594;</button>
       </div>
     </div>
   </div>
 </section>
 
 <!-- ============ INSTAGRAM ============ -->
-<section id="journal">
+<section class="insta">
   <div class="wrap">
     <div class="insta-head reveal">
       <div>
         <span class="eyebrow">Follow Along</span>
-        <h2 style="margin-top:18px;">Fresh frames,<br class="hide-mob"> straight from set.</h2>
+        <h2 class="split">From the &lsquo;Gram</h2>
       </div>
-      <a href="https://instagram.com/fusionbellsfilms" target="_blank" rel="noopener" class="btn btn-ghost">@fusionbellsfilms</a>
+      <a href="https://instagram.com/fusionbellsfilms" target="_blank" rel="noopener" class="link-arrow">@fusionbellsfilms</a>
     </div>
     <div class="insta-grid reveal">
-      <a class="insta-item" href="https://instagram.com/fusionbellsfilms" target="_blank" rel="noopener"><img src="images/haldi-hands-circle.webp" loading="lazy" alt="Instagram post — haldi family circle"><span class="ov">&#9825;</span></a>
-      <a class="insta-item" href="https://instagram.com/fusionbellsfilms" target="_blank" rel="noopener"><img src="images/varmala-moment.webp" loading="lazy" alt="Instagram post — varmala exchange"><span class="ov">&#9825;</span></a>
-      <a class="insta-item" href="https://instagram.com/fusionbellsfilms" target="_blank" rel="noopener"><img src="images/henna-hands.webp" loading="lazy" alt="Instagram post — henna detail"><span class="ov">&#9825;</span></a>
-      <a class="insta-item" href="https://instagram.com/fusionbellsfilms" target="_blank" rel="noopener"><img src="images/bride-firelight.webp" loading="lazy" alt="Instagram post — bride firelight portrait"><span class="ov">&#9825;</span></a>
-      <a class="insta-item" href="https://instagram.com/fusionbellsfilms" target="_blank" rel="noopener"><img src="images/light-dancers.webp" loading="lazy" alt="Instagram post — reception light performers"><span class="ov">&#9825;</span></a>
-      <a class="insta-item" href="https://instagram.com/fusionbellsfilms" target="_blank" rel="noopener"><img src="images/temple-walk.webp" loading="lazy" alt="Instagram post — heritage temple portrait"><span class="ov">&#9825;</span></a>
+      <button class="insta-item" data-full="images/haldi-hands-circle.webp"><img src="images/haldi-hands-circle.webp" loading="lazy" alt="Instagram post — haldi family circle"><span class="ov">View fullsize</span></button>
+      <button class="insta-item" data-full="images/varmala-moment.webp"><img src="images/varmala-moment.webp" loading="lazy" alt="Instagram post — varmala exchange"><span class="ov">View fullsize</span></button>
+      <button class="insta-item" data-full="images/henna-hands.webp"><img src="images/henna-hands.webp" loading="lazy" alt="Instagram post — henna detail"><span class="ov">View fullsize</span></button>
+      <button class="insta-item" data-full="images/bride-firelight.webp"><img src="images/bride-firelight.webp" loading="lazy" alt="Instagram post — bride firelight portrait"><span class="ov">View fullsize</span></button>
+      <button class="insta-item" data-full="images/light-dancers.webp"><img src="images/light-dancers.webp" loading="lazy" alt="Instagram post — reception light performers"><span class="ov">View fullsize</span></button>
+      <button class="insta-item" data-full="images/temple-walk.webp"><img src="images/temple-walk.webp" loading="lazy" alt="Instagram post — heritage temple portrait"><span class="ov">View fullsize</span></button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FULL-BLEED CTA BAND ============ -->
+<section class="cta-band" data-parallax>
+  <div class="cta-bg" style="background-image:url('images/bride-pink-saree.webp')"></div>
+  <div class="cta-inner">
+    <h2 class="cta-line">
+      <span class="cta-text">Capturing love, beyond all boundaries.</span>
+      <svg class="cta-ring" viewBox="0 0 640 90" preserveAspectRatio="none" aria-hidden="true">
+        <ellipse cx="320" cy="45" rx="312" ry="36" fill="none" stroke="currentColor" stroke-width="1.4"/>
+      </svg>
+    </h2>
+    <a href="#work" class="btn btn-slab">explore the unscripted</a>
+  </div>
+</section>
+
+<!-- ============ JOURNAL / BLOG ============ -->
+<section class="journal" id="journal">
+  <div class="wrap">
+    <div class="section-head center reveal">
+      <span class="eyebrow">Our Blog</span>
+      <h2 class="split">Notes from the field</h2>
+      <p>Honest advice from a decade of wedding days — planning, timelines, and what actually matters on the morning of.</p>
+    </div>
+
+    <div class="post-grid">
+      <article class="post reveal">
+        <span class="post-flag">Featured</span>
+        <div class="post-media"><img src="images/rings-foreheads.webp" loading="lazy" alt="Couple with rings, foreheads touching"></div>
+        <div class="post-meta">Planning &nbsp;·&nbsp; 6 min read</div>
+        <h3>You Only Get One Shot at Your Wedding Day. Here's How to Make Sure It Counts</h3>
+        <p class="post-excerpt">There is no second take on a wedding day. Everything your photographer will ever have of it is decided by choices you make weeks earlier — mostly about time.</p>
+        <div class="post-body">
+          <p>The single biggest predictor of a beautiful gallery isn't the venue, the outfits or the camera. It's the schedule. Couples who leave a thirty-minute buffer before the ceremony get portraits in the best light of the day. Couples who don't, get a rushed ten minutes at noon.</p>
+          <p>Ask your planner for a written run-sheet and share it with your photography team at least two weeks out. Tell us who matters — the grandmother who flew in, the friend who has been there since school. We cannot photograph a relationship we don't know exists.</p>
+          <p>And one last thing: eat. Nothing shows up in photographs faster than a couple who hasn't had a meal since the mehndi.</p>
+        </div>
+        <button class="link-arrow post-toggle" type="button">Read more</button>
+      </article>
+
+      <article class="post reveal reveal-d1">
+        <span class="post-flag">Featured</span>
+        <div class="post-media"><img src="images/light-dancers.webp" loading="lazy" alt="Reception performers with lights"></div>
+        <div class="post-meta">Craft &nbsp;·&nbsp; 4 min read</div>
+        <h3>Why Couples Across India Are Choosing Documentary-Style Wedding Films</h3>
+        <p class="post-excerpt">The staged highlight reel is quietly going out of fashion, and something far more durable is taking its place.</p>
+        <div class="post-body">
+          <p>For years, wedding films were built the same way: slow motion, a licensed love song, and a couple asked to walk towards the camera one more time. They looked good in the first year and dated badly by the fifth.</p>
+          <p>Documentary editing takes the opposite bet. We record the speeches in full, the ambient sound of the shehnai, the exact moment a brother's voice breaks. The result is longer, quieter, and far more likely to be watched a decade later.</p>
+          <p>If you are choosing between studios, ask to see a full film — not a teaser. The teaser shows you their best ninety seconds. The full film shows you their judgement.</p>
+        </div>
+        <button class="link-arrow post-toggle" type="button">Read more</button>
+      </article>
+
+      <article class="post reveal reveal-d2">
+        <span class="post-flag">Featured</span>
+        <div class="post-media"><img src="images/smoke-cannons.webp" loading="lazy" alt="Baraat with smoke cannons"></div>
+        <div class="post-meta">Studio &nbsp;·&nbsp; 3 min read</div>
+        <h3>Rewinding a Year Filled With Love, Laughter and Unforgettable Moments</h3>
+        <p class="post-excerpt">Twenty-three weddings, eleven cities, one crew that somehow still likes each other. A look back at the year in frames.</p>
+        <div class="post-body">
+          <p>We began in January in a Mysuru courtyard and finished in December on a Goan beach, and somewhere in between we shot our first Himalayan elopement — four people, one priest, and weather that changed its mind hourly.</p>
+          <p>The frames we keep coming back to are almost never the ones we planned. A father adjusting his daughter's dupatta. Two cousins asleep on a sofa at 3am. A groom laughing so hard he had to sit down.</p>
+          <p>Thank you to every family that let us stand quietly in the corner of their most important day. We don't take the invitation lightly.</p>
+        </div>
+        <button class="link-arrow post-toggle" type="button">Read more</button>
+      </article>
     </div>
   </div>
 </section>
 
 <!-- ============ CONTACT ============ -->
+<!-- ============ CONTACT ============ -->
 <section class="contact" id="contact">
-  <div class="wrap contact-grid">
-    <div class="contact-info reveal">
-      <span class="eyebrow">Let's Talk</span>
-      <h2 style="margin-top:18px;">Tell us your date.<br>We'll bring the light.</h2>
-      <p>Currently booking weddings across Bengaluru, Mysuru and destination locations through 2027. Reach out and we'll respond within 24 hours.</p>
+  <div class="contact-bg" style="background-image:url('images/embrace-sky.webp')"></div>
 
-      <a href="https://wa.me/918970511524?text=Hi%20Fusion%20Bells%20Films%2C%20I%27d%20love%20to%20enquire%20about%20my%20wedding%20date." target="_blank" rel="noopener" class="whatsapp-cta">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.6 6.3A8.86 8.86 0 0 0 12.02 3.5 8.94 8.94 0 0 0 3.1 12.4c0 1.6.4 3.1 1.2 4.5L3 21.5l4.8-1.3a9 9 0 0 0 4.2 1.1h0a8.94 8.94 0 0 0 8.9-8.9c0-2.4-.9-4.6-2.6-6.3zM12 19.6a7.3 7.3 0 0 1-3.7-1l-.3-.2-2.8.8.8-2.7-.2-.3a7.4 7.4 0 0 1-1.1-3.9A7.4 7.4 0 0 1 12 4.9a7.3 7.3 0 0 1 5.2 2.2 7.3 7.3 0 0 1 2.2 5.2A7.4 7.4 0 0 1 12 19.6zm4-5.5c-.2-.1-1.3-.6-1.5-.7-.2-.1-.4-.1-.5.1-.2.2-.6.7-.7.9-.1.1-.3.2-.5.1-.2-.1-1-.4-2-1.2-.7-.6-1.2-1.4-1.4-1.6-.1-.2 0-.4.1-.5l.4-.4c.1-.1.2-.3.2-.4.1-.1 0-.3 0-.4-.1-.1-.5-1.3-.7-1.7-.2-.5-.4-.4-.5-.4h-.5c-.1 0-.4.1-.6.3-.2.2-.8.8-.8 2s.8 2.3 1 2.5c.1.1 1.7 2.6 4.1 3.6.6.3 1 .4 1.4.5.6.2 1.1.2 1.5.1.5-.1 1.3-.5 1.5-1 .2-.5.2-.9.1-1z"/></svg>
-        WhatsApp Us Directly
-      </a>
+  <div class="contact-inner">
+    <h2 class="contact-title split">Contact Us — Candid Wedding Photographers in Bangalore</h2>
 
-      <div class="info-list">
-        <div class="info-item">
-          <span class="ico">&#9742;</span>
-          <div><div class="lbl">Call / WhatsApp</div><div class="val">+91 8970511524</div></div>
-        </div>
-        <div class="info-item">
-          <span class="ico">&#9993;</span>
-          <div><div class="lbl">Email</div><div class="val">hello@fusionbellsfilms.com</div></div>
-        </div>
-        <div class="info-item">
-          <span class="ico">&#128205;</span>
-          <div><div class="lbl">Studio</div><div class="val">Indiranagar, Bengaluru — serving Mysuru &amp; destination weddings</div></div>
-        </div>
-      </div>
-
-      <iframe class="map-frame" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
-        src="https://www.google.com/maps?q=Indiranagar,Bengaluru&output=embed"></iframe>
-
-      <div class="social-row">
-        <a href="https://instagram.com/fusionbellsfilms" target="_blank" rel="noopener" aria-label="Instagram">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
-        </a>
-        <a href="https://facebook.com" target="_blank" rel="noopener" aria-label="Facebook">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
-        </a>
-        <a href="https://youtube.com" target="_blank" rel="noopener" aria-label="YouTube">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31.4 31.4 0 0 0 0 12a31.4 31.4 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31.4 31.4 0 0 0 24 12a31.4 31.4 0 0 0-.5-5.8zM9.6 15.6V8.4l6.3 3.6-6.3 3.6z"/></svg>
+    <div class="contact-card">
+      <div class="cc-lead reveal">
+        <h3>Let&rsquo;s chat in person!</h3>
+        <a href="https://wa.me/918970511524?text=Hi%20Fusion%20Bells%20Films%2C%20I%27d%20love%20to%20enquire%20about%20my%20wedding%20date." target="_blank" rel="noopener" class="whatsapp-cta">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.6 6.3A8.86 8.86 0 0 0 12.02 3.5 8.94 8.94 0 0 0 3.1 12.4c0 1.6.4 3.1 1.2 4.5L3 21.5l4.8-1.3a9 9 0 0 0 4.2 1.1h0a8.94 8.94 0 0 0 8.9-8.9c0-2.4-.9-4.6-2.6-6.3zM12 19.6a7.3 7.3 0 0 1-3.7-1l-.3-.2-2.8.8.8-2.7-.2-.3a7.4 7.4 0 0 1-1.1-3.9A7.4 7.4 0 0 1 12 4.9a7.3 7.3 0 0 1 5.2 2.2 7.3 7.3 0 0 1 2.2 5.2A7.4 7.4 0 0 1 12 19.6zm4-5.5c-.2-.1-1.3-.6-1.5-.7-.2-.1-.4-.1-.5.1-.2.2-.6.7-.7.9-.1.1-.3.2-.5.1-.2-.1-1-.4-2-1.2-.7-.6-1.2-1.4-1.4-1.6-.1-.2 0-.4.1-.5l.4-.4c.1-.1.2-.3.2-.4.1-.1 0-.3 0-.4-.1-.1-.5-1.3-.7-1.7-.2-.5-.4-.4-.5-.4h-.5c-.1 0-.4.1-.6.3-.2.2-.8.8-.8 2s.8 2.3 1 2.5c.1.1 1.7 2.6 4.1 3.6.6.3 1 .4 1.4.5.6.2 1.1.2 1.5.1.5-.1 1.3-.5 1.5-1 .2-.5.2-.9.1-1z"/></svg>
+          Or message us on WhatsApp
         </a>
       </div>
-    </div>
 
-    <div class="reveal reveal-d1">
-      <form id="enquiryForm">
-        <div class="row2">
-          <div class="field">
-            <label for="fName">Full name</label>
-            <input id="fName" name="name" type="text" required placeholder="Your name">
-          </div>
-          <div class="field">
-            <label for="fPhone">Phone / WhatsApp</label>
-            <input id="fPhone" name="phone" type="tel" required placeholder="+91">
+      <div class="cc-grid">
+        <div class="cc-studio reveal">
+          <h4 class="cc-name">Fusion Bells Films</h4>
+          <p class="cc-address">Hosakerehalli, Bengaluru, Karnataka 560085, India<br>Shooting across India &amp; worldwide</p>
+
+          <p class="cc-phones">
+            <a href="tel:+918970511524">+91 89705 11524</a>
+            <a href="tel:+917411687671">+91 74116 87671</a>
+            <a href="mailto:hello@fusionbellsfilms.com">hello@fusionbellsfilms.com</a>
+          </p>
+
+          <h4 class="cc-hours-head">Hours</h4>
+          <p class="cc-hours"><span class="dot" id="openDot"></span><span id="hoursNow">Monday – Saturday, 10:00 am – 7:00 pm</span></p>
+          <p class="cc-note">Currently booking weddings across India and destination locations through 2027. We reply within 24 hours.</p>
+
+          <iframe class="map-frame" title="Fusion Bells Films studio location" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+            src="https://maps.google.com/maps?q=12.9333305,77.5361861&z=16&hl=en&output=embed"></iframe>
+
+          <div class="social-row">
+            <a href="https://instagram.com/fusionbellsfilms" target="_blank" rel="noopener" aria-label="Instagram">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="3.6"/><circle cx="17.4" cy="6.6" r=".9" fill="currentColor" stroke="none"/></svg>
+            </a>
+            <a href="https://facebook.com/fusionbellsfilms" target="_blank" rel="noopener" aria-label="Facebook">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+            </a>
+            <a href="https://youtube.com/@fusionbellsfilms" target="_blank" rel="noopener" aria-label="YouTube">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31.4 31.4 0 0 0 0 12a31.4 31.4 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31.4 31.4 0 0 0 24 12a31.4 31.4 0 0 0-.5-5.8zM9.6 15.6V8.4l6.3 3.6-6.3 3.6z"/></svg>
+            </a>
           </div>
         </div>
-        <div class="row2">
-          <div class="field">
-            <label for="fDate">Wedding date</label>
-            <input id="fDate" name="date" type="date">
-          </div>
-          <div class="field">
-            <label for="fService">Interested in</label>
-            <select id="fService" name="service">
-              <option>Photography + Cinematography</option>
-              <option>Photography only</option>
-              <option>Cinematography only</option>
-              <option>Pre-wedding / Couple shoot</option>
-            </select>
-          </div>
-        </div> 
-        <div class="field">
-          <label for="fVenue">Venue &amp; city</label>
-          <input id="fVenue" name="venue" type="text" placeholder="e.g. Taj West End, Bengaluru">
+
+        <div class="cc-form reveal reveal-d1">
+          <form id="enquiryForm">
+            <div class="row2">
+              <div class="field">
+                <label for="fName">Full name</label>
+                <input id="fName" name="name" type="text" required placeholder="Your name">
+              </div>
+              <div class="field">
+                <label for="fPhone">Phone / WhatsApp</label>
+                <input id="fPhone" name="phone" type="tel" required placeholder="+91">
+              </div>
+            </div>
+            <div class="row2">
+              <div class="field">
+                <label for="fDate">Wedding date</label>
+                <input id="fDate" name="date" type="date">
+              </div>
+              <div class="field">
+                <label for="fService">Interested in</label>
+                <select id="fService" name="service">
+                  <option>Photography + Cinematography</option>
+                  <option>Photography only</option>
+                  <option>Cinematography only</option>
+                  <option>Pre-wedding / Couple shoot</option>
+                </select>
+              </div>
+            </div>
+            <div class="field">
+              <label for="fVenue">Venue &amp; city</label>
+              <input id="fVenue" name="venue" type="text" placeholder="e.g. Taj West End, Bengaluru">
+            </div>
+            <div class="field">
+              <label for="fMsg">Tell us about your events</label>
+              <textarea id="fMsg" name="message" placeholder="Function dates, guest count, anything you'd like us to know..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-slab cc-submit">How can we be a part of your story?</button>
+            <p class="form-msg" id="formMsg">Thank you — your enquiry has been noted. We'll reach out on WhatsApp or email within 24 hours.</p>
+          </form>
         </div>
-        <div class="field">
-          <label for="fMsg">Tell us about your events</label>
-          <textarea id="fMsg" name="message" placeholder="Function dates, guest count, anything you'd like us to know..."></textarea>
-        </div>
-        <button type="submit" class="btn btn-solid" style="width:100%; justify-content:center;">Send Enquiry</button>
-        <p class="form-msg" id="formMsg">Thank you — your enquiry has been noted. We'll reach out on WhatsApp or email within 24 hours.</p>
-      </form>
+      </div>
     </div>
   </div>
 </section>
@@ -445,16 +699,16 @@
   <div class="wrap">
     <div class="footer-top">
       <div class="footer-brand">
-        <img src="https://lh3.googleusercontent.com/d/1tW6i02qYJrr94DZh-M144HtvmTKJtkH-=w1000" alt="Fusion Bells Films" class="footer-logo">
-        <p>A boutique wedding photography &amp; cinematography studio in Bengaluru, telling South Indian love stories one honest frame at a time.</p>
+        <img src="images/logo-full.png" alt="Fusion Bells Films" class="footer-logo">
+        <p>A boutique wedding photography &amp; cinematography studio in Bengaluru, telling Indian love stories one honest frame at a time.</p>
       </div>
       <div class="footer-cols">
         <div class="footer-col">
           <h4>Studio</h4>
           <a href="#story">Our Story</a>
-          <a href="#films">Portfolio</a>
+          <a href="gallery.html">Photo Gallery</a>
+          <a href="#films">Films</a>
           <a href="#reviews">Reviews</a>
-          <a href="#contact">Enquire</a>
         </div>
         <div class="footer-col">
           <h4>Services</h4>
@@ -466,19 +720,46 @@
         <div class="footer-col">
           <h4>Contact</h4>
           <a href="mailto:hello@fusionbellsfilms.com">hello@fusionbellsfilms.com</a>
-          <a href="tel:+918970511524">+91 8970511524</a>
-          <span>Indiranagar, Bengaluru</span>
+          <a href="tel:+918970511524">+91 89705 11524</a>
+          <a href="tel:+917411687671">+91 74116 87671</a>
+          <span>Mon – Sat, 10am – 7pm</span>
+          <span>Hosakerehalli, Bengaluru 560085</span>
         </div>
       </div>
     </div>
+
+    <nav class="footer-nav" aria-label="Footer">
+      <a href="gallery.html">Photo Gallery</a><i>|</i>
+      <a href="#films">Films</a><i>|</i>
+      <a href="#journal">Blogs</a><i>|</i>
+      <a href="#contact">Contact us</a>
+    </nav>
+
+    <div class="footer-tags">
+      <span>Candid Wedding Photographers in Bangalore</span>
+      <span>Wedding Cinematography India</span>
+      <span>Destination Wedding Photographer</span>
+      <span>Pre-Wedding Shoot Bengaluru</span>
+      <span>Luxury Indian Wedding Films</span>
+    </div>
+
     <div class="footer-bottom">
-      <span>&copy; <span id="year"></span> Fusion Bells Films. All rights reserved.</span>
+      <span>COPYRIGHT &copy; <span id="year"></span> FUSION BELLS FILMS</span>
       <span>Crafted with love in Bengaluru</span>
     </div>
   </div>
 </footer>
 
 <button class="totop" id="toTop" aria-label="Back to top">&#8593;</button>
+
+<!-- ============ COOKIE BANNER ============ -->
+<div class="cookie" id="cookie" role="dialog" aria-label="Cookie preferences">
+  <p>We use cookies to understand how visitors use this site so we can keep improving it. You can accept or decline — either way, the photographs stay.</p>
+  <div class="cookie-actions">
+    <button class="btn btn-solid btn-sm" id="cookieAccept">Accept</button>
+    <button class="btn btn-ghost btn-sm" id="cookieDecline">Decline</button>
+  </div>
+</div>
 
 <script src="app.js"></script>
 </body>
