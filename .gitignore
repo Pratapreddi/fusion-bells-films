@@ -15,13 +15,4 @@ desktop.ini
 .idea/
 *.log
 
-# Large media files (served via CDN/Drive/Local)
-video/*.mp4
-video/*.webm
-video/*.mov
-video/*.mkv
-*.mp4
-*.webm
-*.mov
-*.mkv
 
