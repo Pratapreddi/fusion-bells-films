@@ -38,6 +38,7 @@ video/*
 images/*.png
 !images/logo-full.png
 !images/logo-mark.png
+!images/logo-wordmark.png
 
 # Stray tooling that ended up in images/
 images/DnsJumper/

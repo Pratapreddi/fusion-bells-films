@@ -136,7 +136,7 @@ h1,h2,h3,h4{
 }
 .loader.done{opacity:0; visibility:hidden;}
 .loader-inner{display:flex; flex-direction:column; align-items:center; gap:18px;}
-.loader-mark{height:56px; width:auto; opacity:.95;}
+.loader-mark{height:58px; width:auto; opacity:.95; filter:brightness(0) invert(1);}
 .loader-word{font-family:var(--ff-display); font-style:italic; font-size:20px; letter-spacing:.18em; color:var(--ivory-dim);}
 .loader-bar{display:block; width:150px; height:1px; background:rgba(244,237,225,.2); overflow:hidden;}
 .loader-bar i{display:block; height:100%; width:0; background:var(--gold-bright); transition:width 1.1s var(--ease);}
@@ -163,7 +163,9 @@ header.site-nav.hidden{transform:translateY(-102%);}
 }
 
 .brand{justify-self:center; display:block;}
-.brand-mark{height:52px; width:auto; filter:brightness(0) opacity(.9); transition:height .4s var(--ease);}
+/* The logo artwork is black. On the ivory header that is correct; on every
+   dark surface it must be flipped to white or it disappears entirely. */
+.brand-mark{height:52px; width:auto; filter:brightness(0) opacity(.9); transition:height .4s var(--ease), filter .4s var(--ease);}
 header.site-nav.scrolled .brand-mark{height:44px;}
 @media (max-width:1024px){ .brand-mark{height:38px;} header.site-nav.scrolled .brand-mark{height:34px;} }
 
@@ -189,7 +191,7 @@ header.site-nav.scrolled .brand-mark{height:44px;}
 body.menu-open header.site-nav{
   background:var(--ink); color:var(--ivory); border-bottom-color:transparent; transform:none; box-shadow:none;
 }
-body.menu-open .brand-mark{filter:none;}
+body.menu-open .brand-mark{filter:brightness(0) invert(1);}
 body.menu-open .nav-toggle{color:var(--ivory);}
 
 .nav-toggle{display:none; align-items:center; gap:10px; justify-self:end;}
@@ -1044,7 +1046,7 @@ section{padding:130px 0; position:relative;}
 footer{background:var(--ink); color:var(--ivory-dim); padding:84px 0 32px;}
 .footer-top{display:flex; justify-content:space-between; align-items:flex-start; gap:48px; flex-wrap:wrap; margin-bottom:60px;}
 .footer-brand{max-width:340px;}
-.footer-logo{height:52px; width:auto; margin-bottom:20px;}
+.footer-logo{height:56px; width:auto; margin-bottom:20px; filter:brightness(0) invert(1);}
 .footer-brand p{font-size:14px;}
 .footer-cols{display:flex; gap:70px; flex-wrap:wrap;}
 .footer-col h4{font-size:10.5px; letter-spacing:.24em; text-transform:uppercase; color:var(--gold-bright); margin-bottom:18px; font-family:var(--ff-body); font-weight:500;}
