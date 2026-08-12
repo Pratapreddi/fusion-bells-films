@@ -3,32 +3,22 @@
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://fusionbellsfilms.com/</loc>
-    <lastmod>2026-08-10</lastmod>
+    <lastmod>2026-08-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://lh3.googleusercontent.com/d/1tW6i02qYJrr94DZh-M144HtvmTKJtkH-=w1200</image:loc>
+      <image:title>Fusion Bells Films — Luxury Indian Wedding Photography &amp; Cinematography</image:title>
+    </image:image>
   </url>
   <url>
-    <loc>https://fusionbellsfilms.com/#story</loc>
-    <lastmod>2026-08-10</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://fusionbellsfilms.com/#films</loc>
-    <lastmod>2026-08-10</lastmod>
+    <loc>https://fusionbellsfilms.com/gallery.html</loc>
+    <lastmod>2026-08-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://fusionbellsfilms.com/#reviews</loc>
-    <lastmod>2026-08-10</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://fusionbellsfilms.com/#contact</loc>
-    <lastmod>2026-08-10</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://lh3.googleusercontent.com/d/1tW6i02qYJrr94DZh-M144HtvmTKJtkH-=w1200</image:loc>
+      <image:title>Fusion Bells Films — Candid Wedding Portfolio &amp; Gallery</image:title>
+    </image:image>
   </url>
 </urlset>
