@@ -1,4 +1,11 @@
+# ============================================================
+# Robots.txt for Fusion Bells Films (https://fusionbellsfilms.com)
+# All search engines & crawlers are allowed full access.
+# ============================================================
+
 User-agent: *
 Allow: /
 
+# Sitemap
 Sitemap: https://fusionbellsfilms.com/sitemap.xml
+
