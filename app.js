@@ -418,12 +418,18 @@
      Apps Script is redeployed.
      --------------------------------------------------------- */
   const FILMS = [
+    // These two are a hybrid on purpose:
+    //   `id`      -> the full film, played from Drive when someone clicks play
+    //   `sources` -> a short silent loop committed to the repo, used for the
+    //                muted background. Drive cannot autoplay, so the background
+    //                has to be a real file; the full film never needs to be.
     {
       key: 'showcase',
       title: 'Gowthami & Samarth',
       label: 'Pre-wedding film',
       type: 'drive',
       id: '19EfXj8FfKqQWbt1k8X5nU8fjyhKhzdD6',
+      sources: ['video/hero-web.mp4'],
       poster: 'images/embrace-sky.webp'
     },
     {
@@ -432,7 +438,8 @@
       label: 'Pre-wedding film',
       type: 'drive',
       id: '1i9r8MXDAMif_WN1NYXsmDstZsXc_qw4h',
-      poster: 'images/light-dancers.webp'
+      sources: ['video/dubai-web.mp4'],
+      poster: 'images/dubai-poster.jpg'
     }
   ];
 

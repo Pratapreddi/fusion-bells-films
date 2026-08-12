@@ -15,10 +15,29 @@ desktop.ini
 .idea/
 *.log
 
-# Video files — too large for Cloudflare Workers (25 MB limit)
-# Served via Google Drive / YouTube instead
-video/*.mp4
-video/*.webm
-video/*.mov
+# ---------------------------------------------------------------
+# Video
+# ---------------------------------------------------------------
+# Camera masters stay OUT of git. Cloudflare refuses any single file
+# over 25 MB, and the 4K originals here are ~90 MB each.
+#
+# Only the small web-ready loops are committed. They carry a "-web"
+# suffix precisely so a master can never be added by accident — no
+# master is ever named that way.
+video/*
+!video/README.txt
+!video/*-web.mp4
 
+# ---------------------------------------------------------------
+# Images
+# ---------------------------------------------------------------
+# The site loads .webp everywhere (2.3 MB for the whole set). The .png
+# originals of those same photographs total ~33 MB and are never
+# referenced — keep them local. The two logo PNGs ARE used, so they
+# are allowed back in below.
+images/*.png
+!images/logo-full.png
+!images/logo-mark.png
 
+# Stray tooling that ended up in images/
+images/DnsJumper/

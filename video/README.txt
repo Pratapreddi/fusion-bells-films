@@ -1,36 +1,57 @@
-FUSION BELLS FILMS — hero background clip
-=========================================
+FUSION BELLS FILMS — video folder
+=================================
 
-Drop the showcase clip in this folder as:
+WHAT LIVES HERE
 
-    hero-loop.mp4      (preferred)
-    hero-loop.webm     (optional, smaller — used if no .mp4 is present)
+  dubai.mp4        4K camera master   ~93 MB   NOT committed (gitignored)
+  hero-loop.mp4    4K camera master   ~90 MB   NOT committed (gitignored)
 
-It plays muted and looping behind the hero headline on desktop, and again
-behind the pinned showreel section. Until one of these files exists the site
-simply keeps the photo carousel — nothing breaks.
+  dubai-web.mp4    20s silent loop    ~6.8 MB  COMMITTED, live on the site
+  hero-web.mp4     20s silent loop    ~6.7 MB  COMMITTED, live on the site
 
-EXPORT SETTINGS
-  Source      04 Gowthami & Samarth__Prewed Song CC 25.04.2024.mp4
-  Length      15-25 seconds (pick the most striking stretch)
-  Resolution  1920x1080
-  Codec       H.264, high profile
-  Bitrate     ~6-8 Mbps  (aim for a file under ~12 MB)
-  Audio       REMOVE the audio track entirely — it is muted anyway, and
-              dropping it saves size and avoids autoplay problems
-  Frame rate  match the source (24 or 25 fps)
+Only files ending in "-web.mp4" are committed. Masters stay on this machine.
 
-Why short: this file downloads before the hero looks its best. A 20s loop at
-10MB is barely noticeable; a 3-minute film at 200MB is a broken first
-impression on mobile data.
 
-----------------------------------------------------------------
-SECOND CLIP — the Dubai band ("A desert, two people...")
-----------------------------------------------------------------
-    dubai.mp4      (or dubai.webm)
+WHY
 
-Same export settings as above. It plays muted and looping behind that
-section, and the "play with sound" button opens the full film.
+Cloudflare refuses to serve any single file over 25 MB. The masters are
+~90 MB each, so they can never go on the site — that is why the clips
+played locally but not on fusionbellsfilms.com.
 
-Until it exists the section shows the desert still photograph instead —
-which already looks right, so there is no rush.
+A 90 MB background loop would also make a phone visitor wait ~30 seconds
+and spend 90 MB of data on decorative wallpaper. The 6.8 MB version looks
+identical once it is behind a dark veil, and starts in about a second.
+
+
+MAKING A NEW WEB LOOP
+
+ffmpeg is blocked on this PC by Windows Smart App Control, so these are
+made with Windows' own built-in encoder instead. From the project folder:
+
+  powershell -File tools\make-web-loop.ps1 `
+      -InPath  video\dubai.mp4 `
+      -OutPath video\dubai-web.mp4 `
+      -StartSeconds 12 -DurationSeconds 20
+
+  python tools\faststart.py video\dubai-web.mp4
+
+  -StartSeconds     where in the master the loop begins
+  -DurationSeconds  keep it short; 20s is plenty for a loop
+  -Bitrate          defaults to 2800000 (2.8 Mbps), fine for 1080p
+
+The script always outputs 1920x1080, 25fps, and strips the audio track —
+the loops are muted anyway, and a silent track is a common reason browsers
+refuse to autoplay.
+
+The second command moves the video index to the front of the file so
+playback can start before the download finishes. Skip it and the browser
+waits for the whole file before showing a single frame.
+
+
+RULES OF THUMB
+
+  - Keep every committed file under 10 MB. Hard ceiling is 25 MB.
+  - Never commit a master. The "-web" suffix in .gitignore is what
+    prevents it, so do not rename a master to match that pattern.
+  - Full-length films do NOT belong here. They stream from the Google
+    Drive "Video" folder and appear on the site automatically.
