@@ -1210,21 +1210,66 @@
      --------------------------------------------------------- */
   const form = $('#enquiryForm');
   const formMsg = $('#formMsg');
+  const formSubmit = $('#formSubmit');
+
+  function whatsappLink(data) {
+    const lines = [
+      `Hi Fusion Bells Films! I'm ${data.name || ''} (${data.phone || ''}).`,
+      `Wedding date: ${data.date || 'flexible'}`,
+      `Interested in: ${data.service || ''}`,
+      `Venue: ${data.venue || ''}`,
+      data.message || ''
+    ].filter(Boolean);
+    return 'https://wa.me/918970511524?text=' + encodeURIComponent(lines.join('\n'));
+  }
+
+  function setMessage(text, isError) {
+    if (!formMsg) return;
+    formMsg.innerHTML = text;
+    formMsg.classList.add('show');
+    formMsg.classList.toggle('is-error', !!isError);
+  }
+
   if (form) {
-    form.addEventListener('submit', (e) => {
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const data = new FormData(form);
-      const lines = [
-        `Hi Fusion Bells Films! I'm ${data.get('name') || ''} (${data.get('phone') || ''}).`,
-        `Wedding date: ${data.get('date') || 'flexible'}`,
-        `Interested in: ${data.get('service') || ''}`,
-        `Venue: ${data.get('venue') || ''}`,
-        data.get('message') || ''
-      ].filter(Boolean);
-      const waUrl = 'https://wa.me/918970511524?text=' + encodeURIComponent(lines.join('\n'));
-      if (formMsg) formMsg.classList.add('show');
-      form.reset();
-      window.open(waUrl, '_blank', 'noopener');
+      const fd = new FormData(form);
+      const data = Object.fromEntries(fd.entries());
+      data.pageUrl = location.href;
+
+      const label = formSubmit ? formSubmit.textContent : '';
+      if (formSubmit) { formSubmit.disabled = true; formSubmit.textContent = 'Sending…'; }
+      setMessage('', false);
+
+      try {
+        const res = await fetch('/api/enquiry', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        const out = await res.json().catch(() => ({}));
+
+        if (res.ok && out.ok) {
+          form.reset();
+          setMessage(out.acknowledged
+            ? 'Thank you — your enquiry is with us, and a confirmation is on its way to your inbox. We reply within 24 hours.'
+            : 'Thank you — your enquiry is with us. We reply within 24 hours.');
+        } else if (out.fallback || res.status >= 500) {
+          // Our end is misconfigured or down — never pretend it was sent.
+          // Hand the visitor a link that definitely works.
+          setMessage('We could not send that just now. ' +
+            `<a href="${whatsappLink(data)}" target="_blank" rel="noopener">Message us on WhatsApp instead</a> ` +
+            'and we will pick it up right away.', true);
+        } else {
+          setMessage(out.error || 'Please check the form and try again.', true);
+        }
+      } catch (err) {
+        setMessage('You appear to be offline. ' +
+          `<a href="${whatsappLink(data)}" target="_blank" rel="noopener">Message us on WhatsApp</a> ` +
+          'or email hello@fusionbellsfilms.com.', true);
+      } finally {
+        if (formSubmit) { formSubmit.disabled = false; formSubmit.textContent = label; }
+      }
     });
   }
 

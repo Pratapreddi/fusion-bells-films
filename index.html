@@ -732,6 +732,10 @@
               </div>
             </div>
             <div class="field">
+              <label for="fEmail">Email</label>
+              <input id="fEmail" name="email" type="email" autocomplete="email" placeholder="you@example.com">
+            </div>
+            <div class="field">
               <label for="fVenue">Venue &amp; city</label>
               <input id="fVenue" name="venue" type="text" placeholder="e.g. Taj West End, Bangalore">
             </div>
@@ -739,8 +743,16 @@
               <label for="fMsg">Tell us about your events</label>
               <textarea id="fMsg" name="message" placeholder="Function dates, guest count, anything you'd like us to know..."></textarea>
             </div>
-            <button type="submit" class="btn btn-slab cc-submit">How can we be a part of your story?</button>
-            <p class="form-msg" id="formMsg">Thank you — your enquiry has been noted. We'll reach out on WhatsApp or email within 24 hours.</p>
+
+            <!-- Hidden from people, irresistible to bots. Anything typed in
+                 here marks the submission as spam and it is quietly dropped. -->
+            <div class="hp" aria-hidden="true">
+              <label for="fCompany">Company</label>
+              <input id="fCompany" name="company" type="text" tabindex="-1" autocomplete="off">
+            </div>
+
+            <button type="submit" class="btn btn-slab cc-submit" id="formSubmit">How can we be a part of your story?</button>
+            <p class="form-msg" id="formMsg" role="status"></p>
           </form>
         </div>
       </div>

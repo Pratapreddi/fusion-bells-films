@@ -1014,8 +1014,16 @@ section{padding:130px 0; position:relative;}
 .field textarea{resize:vertical; min-height:96px;}
 .row2{display:grid; grid-template-columns:1fr 1fr; gap:22px;}
 @media (max-width:520px){ .row2{grid-template-columns:1fr;} }
-.form-msg{margin-top:18px; font-size:13.5px; color:var(--gold); display:none;}
+.form-msg{margin-top:18px; font-size:14px; color:var(--gold); display:none; line-height:1.6;}
 .form-msg.show{display:block;}
+.form-msg.is-error{color:#A6402F;}
+.form-msg a{text-decoration:underline;}
+
+/* Honeypot: off-screen rather than display:none, because some bots skip
+   fields that are explicitly hidden. Real visitors never see or tab to it. */
+.hp{position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden;}
+
+#formSubmit[disabled]{opacity:.55; cursor:default; transform:none;}
 
 .info-list{display:flex; flex-direction:column; gap:22px; margin-bottom:36px;}
 .info-item{display:flex; gap:16px; align-items:flex-start;}
