@@ -91,9 +91,21 @@ function sendAutoReplies() {
       if (wasUnread) thread.markUnread();
 
     } catch (err) {
-      console.error('Auto-reply failed for a thread: ' + err);
-      // Label it anyway so one bad message cannot jam the queue forever.
-      try { label.addToThread(thread); } catch (e) {}
+      // Do NOT mark it replied — a misconfigured send-as alias fails every
+      // time, and labelling here would silently bury real enquiries forever.
+      // Retry a few times so fixing the alias makes it work retroactively,
+      // then give up on that thread rather than looping indefinitely.
+      const key = 'fail:' + thread.getId();
+      const store = PropertiesService.getScriptProperties();
+      const count = Number(store.getProperty(key) || 0) + 1;
+      store.setProperty(key, String(count));
+      console.error('Auto-reply failed (attempt ' + count + ') for "' +
+                    thread.getFirstMessageSubject() + '": ' + err);
+      if (count >= 3) {
+        console.error('Giving up on this thread after 3 attempts. ' +
+                      'Run diagnose() to see why sending is failing.');
+        try { label.addToThread(thread); } catch (e) {}
+      }
     }
   });
 }
@@ -262,6 +274,89 @@ function removeTrigger() {
     if (t.getHandlerFunction() === 'sendAutoReplies') ScriptApp.deleteTrigger(t);
   });
   console.log('Auto-responder trigger removed.');
+}
+
+/**
+ * ============================================================
+ * RUN THIS FIRST when an expected reply did not arrive.
+ * ============================================================
+ * Checks the setup, then walks recent inbox threads and prints, for each one,
+ * exactly which guard stopped it — or that it would have been answered.
+ * Nothing is sent and nothing is modified.
+ */
+function diagnose() {
+  const line = '--------------------------------------------------';
+  console.log(line);
+  console.log('SETUP');
+  console.log(line);
+
+  let me = '';
+  try { me = Session.getActiveUser().getEmail(); } catch (e) {}
+  console.log('signed in as        : ' + (me || '(unknown — normal on consumer Gmail)'));
+
+  let aliases = [];
+  try { aliases = GmailApp.getAliases(); } catch (e) {}
+  console.log('send-as aliases     : ' + (aliases.length ? aliases.join(', ') : '(none)'));
+
+  const wantAlias = SETTINGS.sendAs;
+  if (wantAlias) {
+    const ok = aliases.indexOf(wantAlias) !== -1 || wantAlias === me;
+    console.log('sendAs "' + wantAlias + '" usable: ' + (ok ? 'YES' : 'NO  <-- THIS WILL BREAK SENDING'));
+    if (!ok) {
+      console.log('   Fix: Gmail > Settings > Accounts > "Send mail as" > add and verify it,');
+      console.log('   or set SETTINGS.sendAs = "" to send as ' + (me || 'this account') + '.');
+    }
+  }
+
+  const triggers = ScriptApp.getProjectTriggers()
+      .filter(function (t) { return t.getHandlerFunction() === 'sendAutoReplies'; });
+  console.log('trigger installed   : ' + (triggers.length
+      ? 'YES (' + triggers.length + ')' : 'NO  <-- run installTrigger()'));
+
+  let htmlOk = true;
+  try { HtmlService.createHtmlOutputFromFile('auto-reply').getContent(); }
+  catch (e) { htmlOk = false; }
+  console.log('auto-reply.html file: ' + (htmlOk ? 'found' : 'MISSING (plain text only)'));
+
+  console.log('');
+  console.log(line);
+  console.log('RECENT INBOX THREADS');
+  console.log(line);
+
+  const threads = GmailApp.search('in:inbox newer_than:' + SETTINGS.lookbackDays + 'd', 0, 15);
+  if (!threads.length) {
+    console.log('No inbox mail in the last ' + SETTINGS.lookbackDays + ' days.');
+    console.log('If you expected some: was it filtered to Spam or another tab?');
+    console.log('This script only ever looks at in:inbox.');
+  }
+
+  threads.forEach(function (thread) {
+    const first = thread.getMessages()[0];
+    const from = first.getFrom();
+    const address = extractAddress_(from);
+    const subject = thread.getFirstMessageSubject();
+    let verdict;
+
+    if (!address)                          verdict = 'SKIP  unreadable From address';
+    else if (isOwnAddress_(address))       verdict = 'SKIP  it is your own address/domain (self-reply guard)';
+    else if (isRobotAddress_(address))     verdict = 'SKIP  looks like a no-reply/robot address';
+    else if (isAutomatedMessage_(first))   verdict = 'SKIP  headers mark it as automated/bulk';
+    else if (weAlreadyRepliedIn_(thread))  verdict = 'SKIP  thread already contains a message from you';
+    else if (inCooldown_(address))         verdict = 'SKIP  already acknowledged within ' + SETTINGS.cooldownDays + ' days';
+    else if (isLabelled_(thread))          verdict = 'SKIP  already labelled "' + SETTINGS.labelName + '"';
+    else                                   verdict = 'WOULD REPLY';
+
+    console.log(verdict + '  |  ' + (address || from) + '  |  ' + subject);
+  });
+
+  console.log('');
+  console.log('Testing tip: send from an address that is NOT yours and NOT on');
+  console.log('your own domain — a friend, or a personal account. Mail from');
+  console.log('your own addresses is skipped on purpose to prevent mail loops.');
+}
+
+function isLabelled_(thread) {
+  return thread.getLabels().some(function (l) { return l.getName() === SETTINGS.labelName; });
 }
 
 /** Clears the "already replied" memory, e.g. after testing. */
