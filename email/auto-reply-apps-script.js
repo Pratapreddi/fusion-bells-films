@@ -1,9 +1,24 @@
 /**
  * ============================================================
- * FUSION BELLS FILMS — email auto-responder
- * Sends the branded acknowledgement to anyone who emails
- * hello@fusionbellsfilms.com
+ * FUSION BELLS FILMS — email auto-responder  (GMAIL ONLY)
  * ============================================================
+ *
+ * !! IMPORTANT — THIS DOES NOT WORK FOR hello@fusionbellsfilms.com !!
+ *
+ * That address is hosted on ZOHO, not Gmail:
+ *     fusionbellsfilms.com  MX -> mx.zoho.in, mx2.zoho.in, mx3.zoho.in
+ *
+ * This script reads a GMAIL inbox. Mail delivered to Zoho never reaches
+ * Gmail, so this will never see it and will never reply.
+ *
+ * Use ONE of these instead:
+ *   A. Set the auto-reply up inside Zoho Mail itself (recommended) and
+ *      use email/auto-reply.html as the message body.
+ *   B. Forward hello@fusionbellsfilms.com into a Gmail account, then this
+ *      script works — but replies must still be sent through a verified
+ *      "Send mail as" alias, or they will come from the Gmail address.
+ *
+ * Everything below is correct and tested for a Gmail-hosted mailbox.
  *
  * SETUP (about 5 minutes)
  *
