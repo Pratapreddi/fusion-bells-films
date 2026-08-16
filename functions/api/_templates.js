@@ -8,13 +8,10 @@ const BRAND = {
   name: 'Fusion Bells Films',
   site: 'https://fusionbellsfilms.com',
   logoUrl: 'https://fusionbellsfilms.com/images/logo-wordmark.png',
-  logoMonogram: 'https://fusionbellsfilms.com/images/FBF.png',
   phone1: '+91 89705 11524',
   phone2: '+91 74116 87671',
   email: 'hello@fusionbellsfilms.com',
   whatsapp: 'https://wa.me/918970511524',
-  instagram: 'https://instagram.com/fusionbellsfilms',
-  youtube: 'https://youtube.com/@fusionbellsfilms',
   address: 'Hosakerehalli, Bangalore, Karnataka 560085, India',
   hours: 'Mon – Sat, 10:00 am – 7:00 pm IST'
 };
@@ -40,15 +37,15 @@ export function studioEmail(f) {
   return `<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
-<body style="margin:0;padding:0;background-color:#F7F4EE;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;">
-  <div style="max-width:600px;margin:30px auto;background:#FFFFFF;border:1px solid #E7DFD1;border-radius:4px;overflow:hidden;box-shadow:0 4px 20px rgba(22,18,15,0.06);">
+<body style="margin:0;padding:0;background-color:#F5F0E6;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;">
+  <div style="max-width:600px;margin:30px auto;background:#FFFFFF;border:1px solid #E6DCCD;border-radius:4px;overflow:hidden;box-shadow:0 4px 20px rgba(22,18,15,0.06);">
 
-    <!-- Header with Brand Logo -->
-    <div style="background:#16120F;padding:32px 28px;text-align:center;border-bottom:2px solid #B0854A;">
+    <!-- Header with Brand Logo on Ivory -->
+    <div style="background:#FAF7F2;padding:36px 28px;text-align:center;border-bottom:1px solid #EAE2D5;">
       <a href="${BRAND.site}" target="_blank" style="text-decoration:none;display:inline-block;">
-        <img src="${BRAND.logoUrl}" alt="${BRAND.name}" style="height:48px;max-width:220px;width:auto;display:block;margin:0 auto;filter:brightness(0) invert(1);" />
+        <img src="${BRAND.logoUrl}" alt="${BRAND.name}" style="height:52px;max-width:240px;width:auto;display:block;margin:0 auto;border:0;" />
       </a>
-      <div style="color:#D8B071;font-size:10px;letter-spacing:3px;text-transform:uppercase;margin-top:10px;font-weight:600;">NEW CLIENT INQUIRY</div>
+      <div style="color:#B0854A;font-size:10.5px;letter-spacing:3px;text-transform:uppercase;margin-top:12px;font-weight:600;">NEW CLIENT INQUIRY</div>
     </div>
 
     <!-- Body Content -->
@@ -89,7 +86,7 @@ export function studioEmail(f) {
     </div>
 
     <!-- Footer -->
-    <div style="background:#F7F4EE;padding:18px 30px;border-top:1px solid #EAE2D5;text-align:center;font-size:12px;color:#8A7E73;">
+    <div style="background:#FAF7F2;padding:18px 30px;border-top:1px solid #EAE2D5;text-align:center;font-size:12px;color:#8A7E73;">
       ${BRAND.name} &bull; ${BRAND.address}
     </div>
   </div>
@@ -125,12 +122,12 @@ export function visitorEmail(f) {
 <body style="margin:0;padding:0;background-color:#F5F0E6;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;">
   <div style="max-width:600px;margin:32px auto;background:#FFFFFF;border:1px solid #E6DCCD;border-radius:4px;overflow:hidden;box-shadow:0 6px 28px rgba(22,18,15,0.07);">
 
-    <!-- Elegant Dark Header with Official Logo -->
-    <div style="background:#14100D;padding:36px 24px;text-align:center;border-bottom:2px solid #B0854A;">
+    <!-- Elegant Light Canvas Header with Crisp Visible Logo -->
+    <div style="background:#FAF7F2;padding:38px 24px;text-align:center;border-bottom:1px solid #EAE2D5;">
       <a href="${BRAND.site}" target="_blank" style="text-decoration:none;display:inline-block;">
-        <img src="${BRAND.logoUrl}" alt="${BRAND.name}" style="height:52px;max-width:240px;width:auto;display:block;margin:0 auto;filter:brightness(0) invert(1);" />
+        <img src="${BRAND.logoUrl}" alt="${BRAND.name}" style="height:56px;max-width:260px;width:auto;display:block;margin:0 auto;border:0;" />
       </a>
-      <div style="font-family:Georgia,serif;font-style:italic;font-size:12px;letter-spacing:3px;color:#D8B071;margin-top:12px;">Real Moments. Timeless Stories.</div>
+      <div style="font-family:Georgia,serif;font-style:italic;font-size:12.5px;letter-spacing:3.5px;color:#B0854A;margin-top:14px;text-transform:uppercase;">Real Moments. Timeless Stories.</div>
     </div>
 
     <!-- Main Message -->
