@@ -1253,15 +1253,32 @@
   }
 
   /* ---------------------------------------------------------
-     ENQUIRY FORM → WhatsApp
+     ENQUIRY FORM → Validation & Submit
      --------------------------------------------------------- */
   const form = $('#enquiryForm');
   const formMsg = $('#formMsg');
   const formSubmit = $('#formSubmit');
+  const pageLoadedAt = Date.now();
+
+  // Phone input filtering & sanitization
+  const phoneInputs = $$('input[name="phone"]');
+  phoneInputs.forEach(input => {
+    input.addEventListener('input', (e) => {
+      // Allow only digits, +, space, hyphen, and parentheses
+      let val = e.target.value.replace(/[^\d\s\+\-\(\)]/g, '');
+      // Ensure + is only at the beginning
+      if (val.indexOf('+') > 0) {
+        val = val.charAt(0) + val.slice(1).replace(/\+/g, '');
+      }
+      if (val.length > 16) val = val.slice(0, 16);
+      e.target.value = val;
+    });
+  });
 
   function whatsappLink(data) {
+    const cleanPhone = (data.phone || '').replace(/[^\d\+]/g, '');
     const lines = [
-      `Hi Fusion Bells Films! I'm ${data.name || ''} (${data.phone || ''}).`,
+      `Hi Fusion Bells Films! I'm ${data.name || ''} (${cleanPhone}).`,
       `Wedding date: ${data.date || 'flexible'}`,
       `Interested in: ${data.service || ''}`,
       `Venue: ${data.venue || ''}`,
@@ -1283,6 +1300,39 @@
       const fd = new FormData(form);
       const data = Object.fromEntries(fd.entries());
       data.pageUrl = location.href;
+      data._ts = pageLoadedAt;
+
+      // Client-side validations
+      const name = (data.name || '').trim();
+      const phone = (data.phone || '').trim();
+      const email = (data.email || '').trim();
+      const phoneDigits = phone.replace(/\D/g, '');
+
+      if (name.length < 2) {
+        setMessage('Please enter your full name (at least 2 letters).', true);
+        const nameEl = form.querySelector('input[name="name"]');
+        if (nameEl) nameEl.focus();
+        return;
+      }
+
+      if (!phone && !email) {
+        setMessage('Please provide either a phone number or email address so we can reach you.', true);
+        return;
+      }
+
+      if (phone && (phoneDigits.length < 8 || phoneDigits.length > 15)) {
+        setMessage('Please enter a valid phone number with 8 to 15 digits (e.g. +91 98765 43210).', true);
+        const phoneEl = form.querySelector('input[name="phone"]');
+        if (phoneEl) phoneEl.focus();
+        return;
+      }
+
+      if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
+        setMessage('Please enter a valid email address (e.g. name@example.com).', true);
+        const emailEl = form.querySelector('input[name="email"]');
+        if (emailEl) emailEl.focus();
+        return;
+      }
 
       const label = formSubmit ? formSubmit.textContent : '';
       if (formSubmit) { formSubmit.disabled = true; formSubmit.textContent = 'Sending…'; }
@@ -1302,16 +1352,16 @@
             ? 'Thank you — your enquiry is with us, and a confirmation email is on its way to your inbox (' + (data.email || '') + '). We reply within 24 hours.'
             : 'Thank you — your enquiry is with us. We reply within 24 hours.');
         } else if (res.status === 404 && (location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
-          // Local preview server does not run Cloudflare Pages Functions
-          setMessage('<b>Local Preview Note:</b> The email auto-reply function (<code>/api/enquiry</code>) runs on Cloudflare Pages with Resend API when deployed. ' +
+          // Local preview server note
+          setMessage('<b>Local Preview Note:</b> The email auto-reply function (<code>/api/enquiry</code>) runs on Cloudflare Pages with Zoho ZeptoMail API when deployed. ' +
             `<br><br><a href="${whatsappLink(data)}" target="_blank" rel="noopener" class="btn btn-solid btn-sm" style="display:inline-block; margin-top:8px;">Test WhatsApp Message Link &rarr;</a>`, false);
         } else if (out.fallback || res.status >= 500 || res.status === 404) {
-          // Server misconfigured, down, or endpoint unavailable
+          // Service misconfigured or endpoint unavailable
           setMessage('We could not send that right now. ' +
             `<a href="${whatsappLink(data)}" target="_blank" rel="noopener">Message us directly on WhatsApp</a> ` +
             'and we will assist you immediately.', true);
         } else {
-          setMessage(out.error || 'Please check your name, phone or email and try again.', true);
+          setMessage(out.error || 'Please check your information and try again.', true);
         }
       } catch (err) {
         setMessage('Connection error. ' +

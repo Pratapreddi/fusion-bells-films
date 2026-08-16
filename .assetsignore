@@ -7,3 +7,6 @@ wrangler.jsonc
 .github
 node_modules
 README.md
+tools
+google-apps-script.js
+email

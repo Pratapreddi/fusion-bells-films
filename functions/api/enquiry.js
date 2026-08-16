@@ -6,6 +6,8 @@
  *   2. a branded acknowledgement, to the visitor
  *
  * Runs natively on Cloudflare Pages using Zoho ZeptoMail (or Resend) HTTPS API.
+ * Hardened with strict input validation, phone digit bounds, anti-spam link limits,
+ * and honeypot bot defenses.
  *
  * REQUIRED Environment Variables (Cloudflare Dashboard -> Settings -> Variables):
  *   ZOHO_ZEPTOMAIL_TOKEN  (or ZOHO_MAIL_TOKEN) - Send Mail Token from zeptomail.zoho.in
@@ -15,7 +17,7 @@
 
 import { studioEmail, studioText, visitorEmail, visitorText } from './_templates.js';
 
-const MAX_LEN = { name: 120, phone: 40, email: 160, date: 40, service: 80, venue: 200, message: 4000 };
+const MAX_LEN = { name: 70, phone: 20, email: 120, date: 30, service: 80, venue: 150, message: 2000 };
 
 const json = (data, status = 200) =>
   new Response(JSON.stringify(data), {
@@ -27,8 +29,48 @@ function clean(value, max) {
   return String(value == null ? '' : value).replace(/\s+/g, ' ').trim().slice(0, max);
 }
 
-function looksLikeEmail(value) {
-  return /^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(value);
+function isValidEmail(value) {
+  if (!value || value.length > 120) return false;
+  // RFC 5322 compliant regex with proper TLD validation
+  return /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/.test(value);
+}
+
+function isValidPhone(value) {
+  if (!value) return false;
+  // Strip all formatting to inspect raw digits
+  const digits = value.replace(/\D/g, '');
+  // Standard international / Indian phone numbers have between 8 and 15 digits (ITU-T E.164)
+  if (digits.length < 8 || digits.length > 15) return false;
+
+  // Ensure characters only include +, digits, spaces, hyphens, and parentheses
+  if (!/^[\+]?[0-9\s\-()]{8,20}$/.test(value.trim())) return false;
+
+  // Reject repeating single-digit junk (e.g. 1111111111 or 0000000000)
+  if (/^(\d)\1{7,}$/.test(digits)) return false;
+
+  return true;
+}
+
+function isValidName(value) {
+  if (!value || value.length < 2 || value.length > 70) return false;
+  // Must contain at least one letter and cannot contain HTML or script characters
+  if (!/[a-zA-Z]/.test(value) || /<[^>]*>|[<>{}\\]/.test(value)) return false;
+  return true;
+}
+
+function isValidDate(value) {
+  if (!value) return true; // Date is optional
+  const d = new Date(value);
+  if (isNaN(d.getTime())) return false;
+  const year = d.getFullYear();
+  const currentYear = new Date().getFullYear();
+  return year >= currentYear - 1 && year <= currentYear + 4;
+}
+
+function countUrls(text) {
+  if (!text) return 0;
+  const matches = text.match(/https?:\/\/|www\./gi);
+  return matches ? matches.length : 0;
 }
 
 function parseAddress(str, defaultName = 'Fusion Bells Films') {
@@ -48,8 +90,19 @@ export async function onRequestPost({ request, env }) {
     return json({ ok: false, error: 'Could not read that submission.' }, 400);
   }
 
-  // Honeypot: field hidden from users but filled by bots
-  if (clean(body.company, 100)) return json({ ok: true });
+  // 1. Honeypot check (field hidden from genuine users, filled by bots)
+  if (clean(body.company, 100) || clean(body.website, 100)) {
+    return json({ ok: true }); // Answer 200 so the bot believes it succeeded
+  }
+
+  // 2. Bot speed trap (form submitted in less than 1.2 seconds from page load)
+  if (body._ts && typeof body._ts === 'number') {
+    const elapsed = Date.now() - body._ts;
+    if (elapsed > 0 && elapsed < 1200) {
+      console.warn('Bot speed submission detected, elapsed:', elapsed);
+      return json({ ok: true }); // Silently drop bot burst
+    }
+  }
 
   const f = {
     name:    clean(body.name, MAX_LEN.name),
@@ -62,11 +115,30 @@ export async function onRequestPost({ request, env }) {
     pageUrl: clean(body.pageUrl, 200)
   };
 
-  if (!f.name || (!f.phone && !f.email)) {
-    return json({ ok: false, error: 'Please add your name and a phone number or email.' }, 422);
+  // 3. Strict Validation
+  if (!isValidName(f.name)) {
+    return json({ ok: false, error: 'Please enter a valid name (at least 2 letters).' }, 422);
   }
-  if (f.email && !looksLikeEmail(f.email)) {
-    return json({ ok: false, error: 'That email address does not look right.' }, 422);
+
+  if (!f.phone && !f.email) {
+    return json({ ok: false, error: 'Please provide either a phone number or email address.' }, 422);
+  }
+
+  if (f.phone && !isValidPhone(f.phone)) {
+    return json({ ok: false, error: 'Please enter a valid phone number (8 to 15 digits).' }, 422);
+  }
+
+  if (f.email && !isValidEmail(f.email)) {
+    return json({ ok: false, error: 'Please enter a valid email address (e.g. name@example.com).' }, 422);
+  }
+
+  if (f.date && !isValidDate(f.date)) {
+    return json({ ok: false, error: 'Please select a valid event date.' }, 422);
+  }
+
+  // 4. Anti-spam link limiter (reject messages loaded with URLs)
+  if (countUrls(f.message) > 2) {
+    return json({ ok: false, error: 'Please remove excess links from your message.' }, 422);
   }
 
   const zohoToken = env.ZOHO_ZEPTOMAIL_TOKEN || env.ZOHO_MAIL_TOKEN || env.ZEPTOMAIL_TOKEN;
@@ -110,7 +182,7 @@ export async function onRequestPost({ request, env }) {
         textbody: text
       };
 
-      if (replyTo && looksLikeEmail(replyTo)) {
+      if (replyTo && isValidEmail(replyTo)) {
         payload.reply_to = [
           {
             address: replyTo,
@@ -159,7 +231,7 @@ export async function onRequestPost({ request, env }) {
       body: JSON.stringify({
         from: fromStr,
         to: [toEmail],
-        reply_to: replyTo && looksLikeEmail(replyTo) ? replyTo : undefined,
+        reply_to: replyTo && isValidEmail(replyTo) ? replyTo : undefined,
         subject: subject,
         html: html,
         text: text
@@ -172,7 +244,7 @@ export async function onRequestPost({ request, env }) {
   const studioResult = await sendEmail({
     toEmail: toParsed.address,
     toName: toParsed.name,
-    replyTo: f.email && looksLikeEmail(f.email) ? f.email : undefined,
+    replyTo: f.email && isValidEmail(f.email) ? f.email : undefined,
     subject: `New enquiry — ${f.name}${f.date ? ` · ${f.date}` : ''}`,
     html: studioEmail(f),
     text: studioText(f)
@@ -185,7 +257,7 @@ export async function onRequestPost({ request, env }) {
 
   // 2. Send Visitor Auto-Reply Acknowledgement
   let acknowledged = false;
-  if (f.email && looksLikeEmail(f.email)) {
+  if (f.email && isValidEmail(f.email)) {
     try {
       const ackResult = await sendEmail({
         toEmail: f.email,

@@ -329,17 +329,17 @@
             <div class="row2">
               <div class="field">
                 <label for="fName">Full name</label>
-                <input id="fName" name="name" type="text" required placeholder="Your name">
+                <input id="fName" name="name" type="text" required maxlength="60" minlength="2" autocomplete="name" placeholder="Your name">
               </div>
               <div class="field">
                 <label for="fPhone">Phone / WhatsApp</label>
-                <input id="fPhone" name="phone" type="tel" required placeholder="+91">
+                <input id="fPhone" name="phone" type="tel" required maxlength="16" minlength="10" inputmode="tel" autocomplete="tel" placeholder="+91 98765 43210">
               </div>
             </div>
             <div class="row2">
               <div class="field">
                 <label for="fDate">Wedding dates</label>
-                <input id="fDate" name="date" type="text" placeholder="e.g. 14–17 Dec 2026">
+                <input id="fDate" name="date" type="text" maxlength="40" placeholder="e.g. 14–17 Dec 2026">
               </div>
               <div class="field">
                 <label for="fService">Service package</label>
@@ -352,15 +352,15 @@
             </div>
             <div class="field">
               <label for="fEmail">Email</label>
-              <input id="fEmail" name="email" type="email" autocomplete="email" placeholder="you@example.com">
+              <input id="fEmail" name="email" type="email" maxlength="100" autocomplete="email" placeholder="you@example.com">
             </div>
             <div class="field">
               <label for="fVenue">Destination &amp; Venue</label>
-              <input id="fVenue" name="venue" type="text" placeholder="e.g. Udaipur, Oberoi Udaivilas / Goa">
+              <input id="fVenue" name="venue" type="text" maxlength="120" placeholder="e.g. Udaipur, Oberoi Udaivilas / Goa">
             </div>
             <div class="field">
               <label for="fMsg">Tell us about your celebration</label>
-              <textarea id="fMsg" name="message" placeholder="Multi-day schedule, estimated guest count, specific requirements..."></textarea>
+              <textarea id="fMsg" name="message" maxlength="2000" placeholder="Multi-day schedule, estimated guest count, specific requirements..."></textarea>
             </div>
 
             <div class="hp" aria-hidden="true">
