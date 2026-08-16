@@ -5,21 +5,12 @@
  *   1. the enquiry, to the studio
  *   2. a branded acknowledgement, to the visitor
  *
- * Runs on Cloudflare alongside the site — no separate host.
+ * Runs natively on Cloudflare Pages using Zoho ZeptoMail (or Resend) HTTPS API.
  *
- * WHY NOT NODEMAILER: it speaks SMTP over raw TCP sockets, which the
- * Workers runtime does not provide. Mail goes out over an HTTPS API
- * instead, which is also faster and avoids storing SMTP credentials.
- *
- * REQUIRED environment variables (Cloudflare dashboard →
- * Workers & Pages → your project → Settings → Variables):
- *
- *   RESEND_API_KEY   secret, from resend.com
- *   MAIL_FROM        e.g. "Fusion Bells Films <hello@fusionbellsfilms.com>"
- *   MAIL_TO          where enquiries land, e.g. hello@fusionbellsfilms.com
- *
- * Set RESEND_API_KEY as a SECRET (encrypted), never as plain text, and
- * never commit it to this repository.
+ * REQUIRED Environment Variables (Cloudflare Dashboard -> Settings -> Variables):
+ *   ZOHO_ZEPTOMAIL_TOKEN  (or ZOHO_MAIL_TOKEN) - Send Mail Token from zeptomail.zoho.in
+ *   MAIL_FROM             e.g. "Fusion Bells Films <hello@fusionbellsfilms.com>"
+ *   MAIL_TO               e.g. "hello@fusionbellsfilms.com"
  */
 
 import { studioEmail, studioText, visitorEmail, visitorText } from './_templates.js';
@@ -40,6 +31,15 @@ function looksLikeEmail(value) {
   return /^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(value);
 }
 
+function parseAddress(str, defaultName = 'Fusion Bells Films') {
+  if (!str) return { address: 'hello@fusionbellsfilms.com', name: defaultName };
+  const match = str.match(/^(.*?)\s*<([^>]+)>$/);
+  if (match) {
+    return { name: match[1].trim() || defaultName, address: match[2].trim() };
+  }
+  return { name: defaultName, address: str.trim() };
+}
+
 export async function onRequestPost({ request, env }) {
   let body;
   try {
@@ -48,8 +48,7 @@ export async function onRequestPost({ request, env }) {
     return json({ ok: false, error: 'Could not read that submission.' }, 400);
   }
 
-  // Honeypot: a field hidden from people but filled in by scrapers. Answer
-  // 200 so the bot believes it succeeded and does not retry.
+  // Honeypot: field hidden from users but filled by bots
   if (clean(body.company, 100)) return json({ ok: true });
 
   const f = {
@@ -70,65 +69,138 @@ export async function onRequestPost({ request, env }) {
     return json({ ok: false, error: 'That email address does not look right.' }, 422);
   }
 
-  const apiKey = env.RESEND_API_KEY;
-  const from = env.MAIL_FROM || 'Fusion Bells Films <hello@fusionbellsfilms.com>';
-  const to = env.MAIL_TO || 'hello@fusionbellsfilms.com';
+  const zohoToken = env.ZOHO_ZEPTOMAIL_TOKEN || env.ZOHO_MAIL_TOKEN || env.ZEPTOMAIL_TOKEN;
+  const resendKey = env.RESEND_API_KEY;
+  const fromStr = env.MAIL_FROM || 'Fusion Bells Films <hello@fusionbellsfilms.com>';
+  const toStr = env.MAIL_TO || 'hello@fusionbellsfilms.com';
 
-  if (!apiKey) {
-    // Misconfigured rather than the visitor's fault — say so plainly so the
-    // form can offer WhatsApp instead of pretending the message was sent.
-    console.error('RESEND_API_KEY is not set on this environment.');
-    return json({ ok: false, error: 'Email is not configured yet.', fallback: true }, 503);
+  if (!zohoToken && !resendKey) {
+    console.error('Neither ZOHO_ZEPTOMAIL_TOKEN nor RESEND_API_KEY is set on this environment.');
+    return json({ ok: false, error: 'Email configuration is missing.', fallback: true }, 503);
   }
 
-  const send = (payload) =>
-    fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: { authorization: `Bearer ${apiKey}`, 'content-type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
+  const fromParsed = parseAddress(fromStr);
+  const toParsed = parseAddress(toStr, 'Studio Admin');
 
-  // The studio copy is the one that must not be lost, so it is sent and
-  // checked first. Replying straight to the visitor is what makes the
-  // "Reply" button in the inbox do the right thing.
-  const studio = await send({
-    from,
-    to: [to],
-    reply_to: f.email && looksLikeEmail(f.email) ? f.email : undefined,
+  // Unified sender function
+  async function sendEmail({ toEmail, toName, replyTo, subject, html, text }) {
+    if (zohoToken) {
+      // Ensure token prefix is present
+      const authHeader = zohoToken.startsWith('Zoho-enczapikey')
+        ? zohoToken
+        : `Zoho-enczapikey ${zohoToken.trim()}`;
+
+      const zeptoEndpoint = env.ZOHO_ENDPOINT || 'https://api.zeptomail.in/v1.1/email';
+
+      const payload = {
+        from: {
+          address: fromParsed.address,
+          name: fromParsed.name
+        },
+        to: [
+          {
+            email_address: {
+              address: toEmail,
+              name: toName || toEmail
+            }
+          }
+        ],
+        subject: subject,
+        htmlbody: html,
+        textbody: text
+      };
+
+      if (replyTo && looksLikeEmail(replyTo)) {
+        payload.reply_to = [
+          {
+            address: replyTo,
+            name: f.name || replyTo
+          }
+        ];
+      }
+
+      let res = await fetch(zeptoEndpoint, {
+        method: 'POST',
+        headers: {
+          'accept': 'application/json',
+          'content-type': 'application/json',
+          'authorization': authHeader
+        },
+        body: JSON.stringify(payload)
+      });
+
+      // Handle potential India DC vs Global DC region routing
+      if (!res.ok && zeptoEndpoint.includes('.in')) {
+        const comEndpoint = 'https://api.zeptomail.com/v1.1/email';
+        const retryRes = await fetch(comEndpoint, {
+          method: 'POST',
+          headers: {
+            'accept': 'application/json',
+            'content-type': 'application/json',
+            'authorization': authHeader
+          },
+          body: JSON.stringify(payload)
+        }).catch(() => null);
+
+        if (retryRes && retryRes.ok) return { ok: true };
+      }
+
+      const out = await res.json().catch(() => ({}));
+      return { ok: res.ok, status: res.status, error: out };
+    }
+
+    // Fallback to Resend API
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'authorization': `Bearer ${resendKey}`,
+        'content-type': 'application/json'
+      },
+      body: JSON.stringify({
+        from: fromStr,
+        to: [toEmail],
+        reply_to: replyTo && looksLikeEmail(replyTo) ? replyTo : undefined,
+        subject: subject,
+        html: html,
+        text: text
+      })
+    });
+    return { ok: res.ok, status: res.status };
+  }
+
+  // 1. Send Studio Notification
+  const studioResult = await sendEmail({
+    toEmail: toParsed.address,
+    toName: toParsed.name,
+    replyTo: f.email && looksLikeEmail(f.email) ? f.email : undefined,
     subject: `New enquiry — ${f.name}${f.date ? ` · ${f.date}` : ''}`,
     html: studioEmail(f),
     text: studioText(f)
   });
 
-  if (!studio.ok) {
-    const detail = await studio.text().catch(() => '');
-    console.error('Studio email failed', studio.status, detail);
-    return json({ ok: false, error: 'We could not send that just now.', fallback: true }, 502);
+  if (!studioResult.ok) {
+    console.error('Studio notification email failed', studioResult);
+    return json({ ok: false, error: 'Could not send enquiry email right now.', fallback: true }, 502);
   }
 
-  // The acknowledgement is a nicety — if it fails the enquiry is still safe,
-  // so never fail the whole request over it.
+  // 2. Send Visitor Auto-Reply Acknowledgement
   let acknowledged = false;
   if (f.email && looksLikeEmail(f.email)) {
     try {
-      const ack = await send({
-        from,
-        to: [f.email],
-        reply_to: to,
+      const ackResult = await sendEmail({
+        toEmail: f.email,
+        toName: f.name,
+        replyTo: toParsed.address,
         subject: 'Thank you for writing to Fusion Bells Films',
         html: visitorEmail(f),
         text: visitorText(f)
       });
-      acknowledged = ack.ok;
-      if (!ack.ok) console.error('Acknowledgement failed', ack.status, await ack.text().catch(() => ''));
+      acknowledged = ackResult.ok;
+      if (!ackResult.ok) console.error('Visitor auto-reply acknowledgement failed', ackResult);
     } catch (err) {
-      console.error('Acknowledgement threw', err);
+      console.error('Visitor auto-reply threw exception', err);
     }
   }
 
   return json({ ok: true, acknowledged });
 }
-
-// Only onRequestPost is exported on purpose. Adding an onRequest catch-all
-// alongside it makes which handler wins ambiguous; with just this one,
-// Cloudflare answers any other method with 405 by itself.
