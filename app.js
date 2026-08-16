@@ -98,11 +98,21 @@
      --------------------------------------------------------- */
   const siteNav = $('#siteNav');
   const toTop = $('#toTop');
-  // Only in-page anchors can drive the active-section underline; cross-page
-  // links like "gallery.html" are not valid selectors.
-  const navAnchors = $$('.nav-links a').filter(a => (a.getAttribute('href') || '').charAt(0) === '#');
+  // Only valid in-page anchors (longer than '#') can drive the active-section underline;
+  // cross-page links or '#' are safely ignored.
+  const navAnchors = $$('.nav-links a').filter(a => {
+    const href = (a.getAttribute('href') || '').trim();
+    return href.startsWith('#') && href.length > 1;
+  });
   const sections = navAnchors
-    .map(a => document.querySelector(a.getAttribute('href')))
+    .map(a => {
+      try {
+        const target = a.getAttribute('href');
+        return target && target.length > 1 ? document.querySelector(target) : null;
+      } catch (err) {
+        return null;
+      }
+    })
     .filter(Boolean);
   let lastY = window.scrollY;
 
@@ -313,6 +323,41 @@
   if (menuOverlay) $$('a', menuOverlay).forEach(a => a.addEventListener('click', () => setMenu(false)));
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && document.body.classList.contains('menu-open')) setMenu(false);
+  });
+
+  /* ---------------------------------------------------------
+     SERVICES DROPDOWN (Hover grace period + click toggle)
+     --------------------------------------------------------- */
+  const dropdownContainers = $$('.has-dropdown');
+  dropdownContainers.forEach(container => {
+    const trigger = container.querySelector(':scope > a') || container.querySelector('a');
+    let hideTimer = null;
+
+    if (trigger) {
+      trigger.addEventListener('click', (e) => {
+        // Toggle dropdown open on direct click or tap
+        const wasOpen = container.classList.contains('open');
+        dropdownContainers.forEach(c => c.classList.remove('open'));
+        if (!wasOpen) container.classList.add('open');
+      });
+    }
+
+    container.addEventListener('mouseenter', () => {
+      clearTimeout(hideTimer);
+      container.classList.add('open');
+    });
+
+    container.addEventListener('mouseleave', () => {
+      hideTimer = setTimeout(() => {
+        container.classList.remove('open');
+      }, 300);
+    });
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.has-dropdown')) {
+      dropdownContainers.forEach(c => c.classList.remove('open'));
+    }
   });
 
   /* ---------------------------------------------------------
@@ -1160,8 +1205,10 @@
     if (tPrev) tPrev.addEventListener('click', () => { goToT(tIndex - 1); restartT(); });
     if (tNext) tNext.addEventListener('click', () => { goToT(tIndex + 1); restartT(); });
     const wrapEl = $('.t-track-wrap');
-    wrapEl.addEventListener('mouseenter', () => clearInterval(tTimer));
-    wrapEl.addEventListener('mouseleave', restartT);
+    if (wrapEl) {
+      wrapEl.addEventListener('mouseenter', () => clearInterval(tTimer));
+      wrapEl.addEventListener('mouseleave', restartT);
+    }
   }
 
   /* ---------------------------------------------------------
@@ -1252,19 +1299,22 @@
         if (res.ok && out.ok) {
           form.reset();
           setMessage(out.acknowledged
-            ? 'Thank you — your enquiry is with us, and a confirmation is on its way to your inbox. We reply within 24 hours.'
+            ? 'Thank you — your enquiry is with us, and a confirmation email is on its way to your inbox (' + (data.email || '') + '). We reply within 24 hours.'
             : 'Thank you — your enquiry is with us. We reply within 24 hours.');
-        } else if (out.fallback || res.status >= 500) {
-          // Our end is misconfigured or down — never pretend it was sent.
-          // Hand the visitor a link that definitely works.
-          setMessage('We could not send that just now. ' +
-            `<a href="${whatsappLink(data)}" target="_blank" rel="noopener">Message us on WhatsApp instead</a> ` +
-            'and we will pick it up right away.', true);
+        } else if (res.status === 404 && (location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
+          // Local preview server does not run Cloudflare Pages Functions
+          setMessage('<b>Local Preview Note:</b> The email auto-reply function (<code>/api/enquiry</code>) runs on Cloudflare Pages with Resend API when deployed. ' +
+            `<br><br><a href="${whatsappLink(data)}" target="_blank" rel="noopener" class="btn btn-solid btn-sm" style="display:inline-block; margin-top:8px;">Test WhatsApp Message Link &rarr;</a>`, false);
+        } else if (out.fallback || res.status >= 500 || res.status === 404) {
+          // Server misconfigured, down, or endpoint unavailable
+          setMessage('We could not send that right now. ' +
+            `<a href="${whatsappLink(data)}" target="_blank" rel="noopener">Message us directly on WhatsApp</a> ` +
+            'and we will assist you immediately.', true);
         } else {
-          setMessage(out.error || 'Please check the form and try again.', true);
+          setMessage(out.error || 'Please check your name, phone or email and try again.', true);
         }
       } catch (err) {
-        setMessage('You appear to be offline. ' +
+        setMessage('Connection error. ' +
           `<a href="${whatsappLink(data)}" target="_blank" rel="noopener">Message us on WhatsApp</a> ` +
           'or email hello@fusionbellsfilms.com.', true);
       } finally {
