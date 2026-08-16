@@ -62,9 +62,25 @@ function isValidDate(value) {
   if (!value) return true; // Date is optional
   const d = new Date(value);
   if (isNaN(d.getTime())) return false;
-  const year = d.getFullYear();
-  const currentYear = new Date().getFullYear();
-  return year >= currentYear - 1 && year <= currentYear + 4;
+
+  // Enforce upcoming dates starting from today
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const maxDate = new Date();
+  maxDate.setFullYear(maxDate.getFullYear() + 4);
+
+  // Parse value as YYYY-MM-DD or standard date
+  const parts = String(value).split('-');
+  let selected;
+  if (parts.length === 3) {
+    selected = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+  } else {
+    selected = new Date(d);
+    selected.setHours(0, 0, 0, 0);
+  }
+
+  return selected >= today && selected <= maxDate;
 }
 
 function countUrls(text) {
@@ -133,7 +149,7 @@ export async function onRequestPost({ request, env }) {
   }
 
   if (f.date && !isValidDate(f.date)) {
-    return json({ ok: false, error: 'Please select a valid event date.' }, 422);
+    return json({ ok: false, error: 'Please choose an upcoming date for your event.' }, 422);
   }
 
   // 4. Anti-spam link limiter (reject messages loaded with URLs)

@@ -1275,6 +1275,19 @@
     });
   });
 
+  // Date picker: enforce upcoming dates (min = today)
+  const now = new Date();
+  const yyyy = now.getFullYear();
+  const mm = String(now.getMonth() + 1).padStart(2, '0');
+  const dd = String(now.getDate()).padStart(2, '0');
+  const todayStr = `${yyyy}-${mm}-${dd}`;
+  const maxYearStr = `${yyyy + 4}-12-31`;
+
+  $$('input[type="date"]').forEach(inp => {
+    inp.min = todayStr;
+    inp.max = maxYearStr;
+  });
+
   function whatsappLink(data) {
     const cleanPhone = (data.phone || '').replace(/[^\d\+]/g, '');
     const lines = [
@@ -1332,6 +1345,21 @@
         const emailEl = form.querySelector('input[name="email"]');
         if (emailEl) emailEl.focus();
         return;
+      }
+
+      // Validate event date (upcoming dates only)
+      if (data.date) {
+        const parts = String(data.date).split('-');
+        if (parts.length === 3) {
+          const selected = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+          const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+          if (selected < startOfToday) {
+            setMessage('Please choose an upcoming date for your event.', true);
+            const dateEl = form.querySelector('input[name="date"]');
+            if (dateEl) dateEl.focus();
+            return;
+          }
+        }
       }
 
       const label = formSubmit ? formSubmit.textContent : '';
