@@ -358,7 +358,16 @@ body.menu-open .menu-links a:nth-child(9){transition-delay:.42s;}
 }
 .hero-sound:hover{background:var(--ivory); color:var(--ink); border-color:var(--ivory);}
 @media (max-width:900px){ .hero-sound{display:none;} }
-.hero-content{position:relative; z-index:2; width:100%; padding-bottom:clamp(54px, 8.5vh, 96px); color:var(--ivory);}
+.hero-content,
+.hero .hero-content{
+  position:relative; z-index:2; width:100%;
+  max-width:1600px;
+  margin-left:0; margin-right:auto;
+  padding-left:clamp(22px, 4vw, 56px);
+  padding-right:clamp(22px, 4vw, 56px);
+  padding-bottom:clamp(54px, 8.5vh, 96px);
+  color:var(--ivory);
+}
 .hero-text{max-width:860px;}
 .hero-title{
   font-size:clamp(50px, 8.4vw, 116px);
