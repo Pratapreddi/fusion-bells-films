@@ -281,8 +281,9 @@ body.menu-open .menu-links a:nth-child(9){transition-delay:.42s;}
 }
 .hero-video.is-playing{opacity:1;}
 .hero::after{
-  content:''; position:absolute; inset:0; z-index:1;
-  background:linear-gradient(180deg, rgba(20,16,13,.62) 0%, rgba(20,16,13,.18) 34%, rgba(20,16,13,.52) 70%, rgba(20,16,13,.92) 100%);
+  content:''; position:absolute; inset:0; z-index:1; pointer-events:none;
+  /* Crystal-clear cinema grade: vivid, luminous midtones like House of Kathaas */
+  background:linear-gradient(180deg, rgba(14,11,9,.25) 0%, rgba(14,11,9,.04) 22%, rgba(14,11,9,0) 48%, rgba(14,11,9,.26) 72%, rgba(14,11,9,.75) 100%);
 }
 .hero-sound{
   position:absolute; z-index:4; right:40px; bottom:34px;
@@ -301,11 +302,13 @@ body.menu-open .menu-links a:nth-child(9){transition-delay:.42s;}
   font-size:clamp(50px, 8.4vw, 116px);
   line-height:1.02; color:var(--ivory);
   margin:24px 0 26px; font-weight:400;
+  text-shadow:0 2px 28px rgba(0,0,0,.65), 0 1px 4px rgba(0,0,0,.85);
 }
 .hero-title .italic{color:#fff;}
 .hero-sub{
-  font-size:16.5px; color:rgba(244,237,225,.82);
+  font-size:16.5px; color:rgba(244,237,225,.95);
   max-width:520px; margin-bottom:40px;
+  text-shadow:0 1px 18px rgba(0,0,0,.75);
 }
 .hero-actions{display:flex; gap:16px; flex-wrap:wrap;}
 
@@ -401,21 +404,23 @@ section{padding:130px 0; position:relative;}
 .ff-video{opacity:0; transition:opacity 1.4s var(--ease);}
 .ff-video.is-playing{opacity:1;}
 .ff-veil{
-  position:absolute; inset:0; z-index:1;
-  background:linear-gradient(100deg, rgba(18,14,11,.82) 0%, rgba(18,14,11,.55) 45%, rgba(18,14,11,.30) 100%);
+  position:absolute; inset:0; z-index:1; pointer-events:none;
+  background:linear-gradient(100deg, rgba(18,14,11,.65) 0%, rgba(18,14,11,.25) 52%, rgba(18,14,11,.08) 100%);
 }
 .ff-copy{position:relative; z-index:2; color:var(--ivory); width:100%;}
 /* wide enough that the written line breaks control the wrap, not the box */
 .ff-copy h2{
   color:var(--ivory); font-weight:400; margin:22px 0 20px;
   font-size:clamp(30px,4.8vw,62px); line-height:1.14; max-width:24ch;
+  text-shadow:0 2px 24px rgba(0,0,0,.6);
 }
 .ff-copy p{
-  color:rgba(244,237,225,.82); font-size:16.5px; max-width:520px; margin-bottom:34px;
+  color:rgba(244,237,225,.9); font-size:16.5px; max-width:520px; margin-bottom:34px;
+  text-shadow:0 1px 16px rgba(0,0,0,.6);
 }
 @media (max-width:768px){
   .film-feature{min-height:78svh; padding:90px 0;}
-  .ff-veil{background:linear-gradient(180deg, rgba(18,14,11,.55) 0%, rgba(18,14,11,.78) 100%);}
+  .ff-veil{background:linear-gradient(180deg, rgba(18,14,11,.35) 0%, rgba(18,14,11,.65) 100%);}
 }
 
 /* ============================================================

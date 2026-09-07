@@ -442,6 +442,8 @@
       cache[key] = (async () => {
         for (const candidate of list) {
           try {
+            // Direct CDN / absolute URLs don't need a relative HEAD probe
+            if (/^https?:\/\//i.test(candidate)) return candidate;
             const probe = await fetch(candidate, { method: 'HEAD' });
             if (probe.ok) return candidate;
           } catch (err) { /* try the next one */ }
@@ -470,11 +472,13 @@
     //                has to be a real file; the full film never needs to be.
     {
       key: 'showcase',
-      title: 'Gowthami & Samarth',
-      label: 'Pre-wedding film',
+      title: 'Sudha & Chethan',
+      label: 'Wedding film',
       type: 'drive',
       id: '19EfXj8FfKqQWbt1k8X5nU8fjyhKhzdD6',
-      sources: ['video/hero-web.mp4'],
+      sources: [
+        'https://cdn.sanity.io/files/b1ttdr7e/production/ac48e64b0a8ae25954b1bb483205b8b6a14d9584.mp4'
+      ],
       poster: 'images/embrace-sky.webp'
     },
     {
@@ -483,7 +487,10 @@
       label: 'Pre-wedding film',
       type: 'drive',
       id: '1i9r8MXDAMif_WN1NYXsmDstZsXc_qw4h',
-      sources: ['video/dubai-web.mp4'],
+      sources: [
+        'https://cdn.sanity.io/files/b1ttdr7e/production/42d63c4ba84bb2fbfd733f432fc8b8fc8d69f699.mp4',
+        'video/dubai.mp4'
+      ],
       poster: 'images/dubai-poster.jpg'
     }
   ];
@@ -491,7 +498,7 @@
   // Which Drive film a named button should open, when no local file is set.
   // Patterns are tried in order, so the exact film wins over a loose match.
   const KEY_MATCHERS = {
-    showcase: [/gowthami[\s\S]*prewed song/i, /prewed song/i, /gowthami|samarth/i],
+    showcase: [/sudha|chethan/i, /gowthami[\s\S]*prewed song/i, /prewed song/i, /gowthami|samarth/i],
     dubai: [/dubai/i, /desert/i]
   };
 
