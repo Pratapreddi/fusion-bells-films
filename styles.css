@@ -161,7 +161,12 @@ header.site-nav.nav-transparent,
 body:has(.hero) header.site-nav:not(.scrolled){
   background:linear-gradient(180deg, rgba(14,11,9,.65) 0%, rgba(14,11,9,.18) 70%, transparent 100%);
   color:var(--ivory);
-  border-bottom:1px solid rgba(244,237,225,.14);
+  border-bottom:none !important;
+}
+header.site-nav.nav-transparent .scroll-progress,
+body:has(.hero) header.site-nav:not(.scrolled) .scroll-progress{
+  opacity:0;
+  visibility:hidden;
 }
 header.site-nav.nav-transparent .brand-mark,
 body:has(.hero) header.site-nav:not(.scrolled) .brand-mark{
@@ -190,6 +195,10 @@ header.site-nav.scrolled{
   color:var(--ink);
   border-bottom:1px solid var(--line-2);
   box-shadow:0 6px 30px rgba(22,18,15,.07);
+}
+header.site-nav.scrolled .scroll-progress{
+  opacity:1;
+  visibility:visible;
 }
 header.site-nav.scrolled .brand-mark{
   filter:brightness(0) opacity(.9);
