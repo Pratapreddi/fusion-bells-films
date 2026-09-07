@@ -114,13 +114,16 @@
       }
     })
     .filter(Boolean);
+  const hasHero = !!$('.hero');
   let lastY = window.scrollY;
 
   function onScroll() {
     const y = window.scrollY;
     const vh = window.innerHeight;
     if (siteNav) {
-      siteNav.classList.toggle('scrolled', y > 60);
+      const isScrolled = hasHero ? (y > 60) : true;
+      siteNav.classList.toggle('scrolled', isScrolled);
+      siteNav.classList.toggle('nav-transparent', !isScrolled && hasHero);
       const goingDown = y > lastY && y > 400;
       siteNav.classList.toggle('hidden', goingDown && !document.body.classList.contains('menu-open'));
     }

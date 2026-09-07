@@ -154,9 +154,61 @@ header.site-nav{
   background:var(--paper);
   color:var(--ink);
   border-bottom:1px solid var(--line-2);
-  transition:transform .5s var(--ease), box-shadow .5s var(--ease), height .4s var(--ease);
+  transition:background .4s var(--ease), color .4s var(--ease), border-color .4s var(--ease), transform .5s var(--ease), box-shadow .5s var(--ease), height .4s var(--ease);
 }
-header.site-nav.scrolled{box-shadow:0 6px 30px rgba(22,18,15,.07);}
+/* Transparent floating nav over hero (before scroll) */
+header.site-nav.nav-transparent,
+body:has(.hero) header.site-nav:not(.scrolled){
+  background:linear-gradient(180deg, rgba(14,11,9,.65) 0%, rgba(14,11,9,.18) 70%, transparent 100%);
+  color:var(--ivory);
+  border-bottom:1px solid rgba(244,237,225,.14);
+}
+header.site-nav.nav-transparent .brand-mark,
+body:has(.hero) header.site-nav:not(.scrolled) .brand-mark{
+  filter:brightness(0) invert(1) drop-shadow(0 2px 10px rgba(0,0,0,.5));
+}
+header.site-nav.nav-transparent .nav-links a,
+body:has(.hero) header.site-nav:not(.scrolled) .nav-links a{
+  color:var(--ivory);
+  text-shadow:0 1px 16px rgba(0,0,0,.65);
+}
+header.site-nav.nav-transparent .nav-links a:hover,
+body:has(.hero) header.site-nav:not(.scrolled) .nav-links a:hover{
+  color:var(--gold-bright);
+}
+header.site-nav.nav-transparent .nav-links a::after,
+body:has(.hero) header.site-nav:not(.scrolled) .nav-links a::after{
+  background:var(--gold-bright);
+}
+header.site-nav.nav-transparent .nav-toggle,
+body:has(.hero) header.site-nav:not(.scrolled) .nav-toggle{
+  color:var(--ivory);
+}
+
+header.site-nav.scrolled{
+  background:var(--paper);
+  color:var(--ink);
+  border-bottom:1px solid var(--line-2);
+  box-shadow:0 6px 30px rgba(22,18,15,.07);
+}
+header.site-nav.scrolled .brand-mark{
+  filter:brightness(0) opacity(.9);
+}
+header.site-nav.scrolled .nav-links a{
+  color:var(--ink-soft);
+  text-shadow:none;
+}
+header.site-nav.scrolled .nav-links a:hover,
+header.site-nav.scrolled .nav-links a.active{
+  color:var(--ink);
+}
+header.site-nav.scrolled .nav-links a::after{
+  background:var(--ink);
+}
+header.site-nav.scrolled .nav-toggle{
+  color:var(--ink);
+}
+
 header.site-nav.hidden{transform:translateY(-102%);}
 .nav-inner{
   display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:24px; width:100%;
@@ -261,7 +313,8 @@ body.menu-open .menu-links a:nth-child(9){transition-delay:.42s;}
    HERO
    ============================================================ */
 .hero{
-  position:relative; height:calc(100svh - var(--nav-h)); min-height:560px; padding:0;
+  position:relative; height:100svh; min-height:100vh; padding:0;
+  margin-top:calc(-1 * var(--nav-h));
   display:flex; align-items:flex-end;
   overflow:hidden; background:var(--ink);
 }
@@ -296,7 +349,7 @@ body.menu-open .menu-links a:nth-child(9){transition-delay:.42s;}
 }
 .hero-sound:hover{background:var(--ivory); color:var(--ink); border-color:var(--ivory);}
 @media (max-width:900px){ .hero-sound{display:none;} }
-.hero-content{position:relative; z-index:2; width:100%; padding-bottom:110px; color:var(--ivory);}
+.hero-content{position:relative; z-index:2; width:100%; padding-bottom:clamp(54px, 8.5vh, 96px); color:var(--ivory);}
 .hero-text{max-width:860px;}
 .hero-title{
   font-size:clamp(50px, 8.4vw, 116px);
@@ -313,7 +366,7 @@ body.menu-open .menu-links a:nth-child(9){transition-delay:.42s;}
 .hero-actions{display:flex; gap:16px; flex-wrap:wrap;}
 
 .hero-frame-count{
-  position:absolute; z-index:2; top:48px; right:40px;
+  position:absolute; z-index:2; top:calc(var(--nav-h) + 24px); right:40px;
   writing-mode:vertical-rl;
   font-size:10.5px; letter-spacing:.3em; text-transform:uppercase;
   color:rgba(244,237,225,.7);
@@ -322,7 +375,7 @@ body.menu-open .menu-links a:nth-child(9){transition-delay:.42s;}
 @media (max-width:900px){ .hero-frame-count{display:none;} }
 
 .hero-dots{
-  position:absolute; z-index:3; right:40px; bottom:110px;
+  position:absolute; z-index:3; right:40px; bottom:clamp(54px, 8.5vh, 96px);
   display:flex; flex-direction:column; gap:10px;
 }
 .hero-dot{width:26px; height:2px; background:rgba(244,237,225,.3); border-radius:2px; transition:background .4s, width .4s;}
@@ -1508,9 +1561,10 @@ footer{background:var(--ink); color:var(--ivory-dim); padding:84px 0 32px;}
   position:absolute; top:calc(100% - 2px); left:50%;
   transform:translateX(-50%) translateY(6px);
   min-width:300px; padding:14px 0;
-  background:var(--paper); border:1px solid var(--line-2);
-  box-shadow:0 22px 60px rgba(22,18,15,.18);
-  border-radius:2px;
+  background:rgba(22,18,15,.96); border:1px solid rgba(244,237,225,.18);
+  backdrop-filter:blur(20px);
+  box-shadow:0 24px 60px rgba(0,0,0,.5);
+  border-radius:4px;
   opacity:0; visibility:hidden; pointer-events:none;
   transition:opacity .25s var(--ease), transform .25s var(--ease), visibility .25s;
   transition-delay: .22s; /* 220ms grace period so mouse can freely move down into list */
@@ -1532,13 +1586,25 @@ footer{background:var(--ink); color:var(--ivory-dim); padding:84px 0 32px;}
   display:flex !important; align-items:center; justify-content:space-between;
   padding:11px 24px !important;
   font-size:15.5px !important; font-family:var(--ff-body) !important;
-  letter-spacing:.01em !important; color:var(--ink) !important;
+  letter-spacing:.01em !important; color:var(--ivory) !important;
   transition:color .25s, padding-left .25s, background .25s !important;
 }
 .dropdown a:hover{
-  color:var(--gold) !important; padding-left:30px !important; background:rgba(176,133,74,.07) !important;
+  color:var(--gold-bright) !important; padding-left:30px !important; background:rgba(216,176,113,.12) !important;
 }
 .dropdown a::after{display:none !important;}
+
+/* When header is scrolled into solid light state */
+header.site-nav.scrolled .nav-links .dropdown{
+  background:var(--paper); border:1px solid var(--line-2);
+  box-shadow:0 22px 60px rgba(22,18,15,.18);
+}
+header.site-nav.scrolled .dropdown a{
+  color:var(--ink) !important;
+}
+header.site-nav.scrolled .dropdown a:hover{
+  color:var(--gold) !important; padding-left:30px !important; background:rgba(176,133,74,.07) !important;
+}
 @media (max-width:1024px){
   .nav-links .dropdown{display:none;}
 }
